@@ -1,0 +1,3 @@
+[console_scripts]
+hpi-audit = cli.hpi_audit:main
+hpi-issue = cli.hpi_issue:main

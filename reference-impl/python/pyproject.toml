@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hpi"
+version = "0.1.0a0"
+description = "HPI (Hyperpersonalized API) Python reference implementation — sovereign cognitive substrate protocol"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Mordechai Potash", email = "mordechai@potash.io" },
+]
+keywords = ["hpi", "agent", "context", "sovereignty", "mcp", "substrate"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    # JWT issuing/verifying with ed25519 + RS256/ES256
+    "PyJWT>=2.8.0",
+    "cryptography>=42.0.0",
+    # JSON Schema validation for axiom families
+    "jsonschema>=4.21.0",
+    # MCP server (stub for now; real wiring in v0.1)
+    # "mcp>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+hpi-issue = "cli.hpi_issue:main"
+hpi-audit = "cli.hpi_audit:main"
+
+[tool.setuptools.packages.find]
+include = ["hpi*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+strict = true
+python_version = "3.10"
