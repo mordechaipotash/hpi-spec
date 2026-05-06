@@ -10,16 +10,88 @@
 
 ## 1. Foundations & Problem Statement
 
-*[OUTLINE — to be expanded. ~800 words target.]*
+### 1.1. The 2026 trajectory
 
-The default trajectory of 2026 places user cognitive context inside hyperscaler infrastructure. The platform's incentive (lock-in, monetization) is opposed to the user's interest (sovereignty, portability, agency). HPI is the protocol-level alternative.
+By May 2026, every major model provider has shipped or is shipping a "memory" feature for their primary chat product. OpenAI's ChatGPT Memory has been live since 2024, with deep cross-conversation personalization and a developing "Chronicle" feature for long-running session state. Google's Gemini personalization layer reads across the user's entire Google account — Gmail, Drive, Calendar, YouTube, Search history — as a single accumulated context surface. Anthropic's Projects feature persists per-project context with a memory layer in beta. All three trajectories converge on the same architecture: **the user's accumulated cognitive context lives on the platform's servers**, owned by the platform under the platform's terms of service, accessible to the user only through the platform's product surfaces.
 
-Must cover:
-- The hyperscaler-context-capture trajectory (OpenAI Memory, Google Gemini personalization, Anthropic memory beta)
-- The alignment claim: the layer should not lie with the alignment of corporate profit
-- Why open protocols beat walled gardens at scale (SMTP, HTTP, OAuth, TCP/IP precedents)
-- What HPI is NOT (model, memory product, wallet, crypto-required, anti-LLM)
-- What HPI IS
+This is not an accident or a temporary state. Cross-conversation context is the moat. Switching costs are exactly the value of the user's accumulated history, and the platforms that own that history capture the rent. The competitive logic is sound and unlikely to reverse without protocol-level intervention.
+
+### 1.2. The alignment problem
+
+The platform's incentive is lock-in, monetization, and corporate-profit alignment. The user's interest is sovereignty, portability, and agency. These are not the same thing — and at platform scale, the divergence compounds.
+
+Mordechai Potash, articulating this position publicly in February 2026:
+
+> *"The elephant in the room is that obviously big tech are all trying to get to be this layer of transformation. It is incredibly dangerous that the layer should lie with the alignment of corporate profit. It is the complete incorrect alignment by definition. This is pashut [obvious]."*
+
+The claim is structural, not adversarial. It is not that any specific platform is acting in bad faith. It is that an architecture in which the cognitive substrate of an individual human is owned by an entity whose primary obligation is to its shareholders cannot, by construction, optimize for the human's agency over the long term. The economics will route around any temporary alignment.
+
+### 1.3. Why open protocols beat walled gardens at scale
+
+History suggests the eventual answer at scale is a protocol, not a product:
+
+- **SMTP** (1982) won email against AOL/CompuServe walled gardens. Nobody owns "your email." Hosting providers (Gmail, Microsoft, Proton) capture rent on infrastructure; the protocol itself is uncapturable.
+- **TCP/IP** (1981) won networking against telco walled gardens. Nobody owns "your packets." ISPs and CDNs capture rent; the protocol is open.
+- **HTTP** (1991) won information access against AOL Channels and CompuServe forums. Nobody owns "your browsing." Cloudflare, browsers, and edge providers capture rent; the protocol is open.
+- **OAuth 2.0** (2012) won delegated authentication against custom-API-key sprawl. Nobody owns "your authentication." Auth0, Okta, and SaaS-side identity layers capture rent; the protocol is open.
+
+The pattern is consistent: when value passes through a layer that's owned by a single entity, that entity captures the value AND constrains the system's evolution to its commercial interests. When the layer is an open protocol, value distributes across an ecosystem of infrastructure providers, and the system's evolution tracks user needs more honestly.
+
+The cognitive-substrate layer of 2026 is exactly the next instance of this pattern. **HPI exists because that protocol does not exist yet.**
+
+### 1.4. What HPI is
+
+HPI is a typed protocol for substrate-boundary context handoff. Specifically:
+
+- A **substrate model** (§2) — L0 through L3 — that names what cognitive context IS, where it lives, and how it transforms across layers within a substrate.
+- A **typed axiom grammar** (§3) — families of typed assertions (OBL, RCG, TRU, PAT in v0) that preserve semantic meaning across substrate boundaries. Without typed grammar, bytes crossing a boundary lose meaning and require re-derivation.
+- An **access control protocol** (§4) — agents request scoped, time-bounded, single-use, revocable tokens to read a human's context, with full audit trail emitted to the human's own substrate.
+- A **wire format** (§5) — extends Anthropic's MCP (Model Context Protocol) with HPI-specific methods. Discovery via well-known URLs. Storage interface implementation-agnostic.
+
+The v0 protocol is the minimum that lets a human own their substrate, agents borrow scoped views, and audit trails accrue under the human's control. It is implementable in a weekend by a single engineer; it is sufficient to demonstrate the architecture; it is positioned to be extended in v0.1 toward W3C Verifiable Credentials, capability-based delegation (macaroons), and ecosystem interop with adjacent open standards.
+
+### 1.5. What HPI is not
+
+HPI is not a model, not a memory product, not a wallet, not a blockchain, not anti-LLM, and not anti-platform. It is a **protocol** that defines a constraint at the substrate boundary. Anyone — including hyperscalers — can be HPI-compliant if their architecture respects the constraint. The constraint forbids a specific failure mode (the platform owning the user's accumulated cognitive substrate); it does not prescribe what the platform's commercial offering must be.
+
+Specifically, HPI is NOT:
+
+- **A model.** LLMs remain LLMs. HPI does not constrain model architecture or training. It governs what data the model has access to during a transaction and what records of that access accrue afterwards.
+- **A memory product.** Mem0, Letta, Khoj, and Pieces solve a related but distinct problem (intra-session and cross-session memory management for agents). HPI's concern is one layer above: who owns the substrate the memory is stored against.
+- **A wallet.** No native token, no cryptocurrency, no token economics. The "tokens" in HPI are JWT-style access credentials, not financial instruments.
+- **Blockchain-required.** Implementations may use Web3 primitives (Ceramic, IPFS, ENS) or pure HTTP+JWT+filesystem. The protocol is silent on storage backing.
+- **Anti-LLM.** LLMs are extraordinarily useful and HPI's whole point is to enable agents acting on the user's behalf. The constraint is on substrate ownership, not on AI utility.
+- **Anti-platform.** Platforms can be HPI-compliant by routing their memory features through user-issued tokens, emitting audit events to the user's substrate, and accepting that the substrate cannot accumulate as the platform's asset. This is a real engineering constraint but not a business-model-killer.
+
+### 1.6. Scope of v0
+
+The v0 spec covers:
+- The substrate model (§2) — load-bearing
+- The typed axiom grammar framework (§3) — load-bearing; v0 ships four reference axiom families
+- The access control protocol (§4) — load-bearing
+- The wire format (§5) — implementable
+- Reference implementation pointers (§6) — pointing at existing working code, not a new clean-room implementation
+- Non-goals (§7) — to manage the discourse around what HPI is being asked to solve
+- Open questions (§8) — RFC-style discussion items
+- Acknowledgements & lineage (§9) — explicit credits for the precedents this builds on
+
+**Out of scope for v0:**
+- W3C Verifiable Credentials integration (target v0.1)
+- Macaroons-style delegation attenuation (target v0.1)
+- JSON Schema appendices for axiom families (target v0.1)
+- Reference implementation as a separate library (target v0.1)
+- Migration tooling from hyperscaler-stored memory to HPI substrate (target v1.0)
+
+### 1.7. Audience
+
+This spec is written for two audiences in roughly equal weight:
+
+1. **Protocol implementers** — engineers building HPI runtimes, axiom-family extensions, or HPI-compliant agents. They need enough specificity to build interoperably.
+2. **Architects and decision-makers** — at organizations choosing between sovereign-substrate and platform-memory architectures. They need the Foundation/Substrate Model/Non-Goals sections to evaluate the constraint.
+
+A third audience — researchers and future protocol authors — is not the primary target but will likely read this document. The Acknowledgements section (§9) is for them: an honest map of what HPI builds on and where the genuinely novel claims are.
+
+---
 
 ---
 
@@ -475,9 +547,205 @@ This is the full HPI pattern.
 
 ## 5. Wire Format & Transport
 
-*[OUTLINE — to be expanded. ~700 words target.]*
+### 5.1. Transport: extending Anthropic MCP
 
-HPI extends Anthropic MCP. Methods: `hpi.request_context`, `hpi.consume_token`, `hpi.revoke_token`, `hpi.audit_query`. Discovery via `/.well-known/hpi.json`. Storage interface: implementation-agnostic L0 blob store + L1+ typed store.
+HPI extends the Anthropic Model Context Protocol (MCP), Apache 2.0, first published November 2024. The choice is deliberate:
+
+- MCP has substantial 2026 adoption (3,000+ community servers, multi-vendor client support)
+- MCP defines the JSON-RPC envelope HPI needs without HPI having to define its own RPC
+- HPI methods become discoverable as MCP tools, naturally interoperating with MCP-aware agents
+
+HPI does NOT replace MCP. An HPI runtime is a specialized MCP server that exposes the methods defined in §5.2 in addition to whatever other tools it offers. An MCP client (e.g., Claude Code, Cursor, or any MCP-compatible agent) interacts with HPI via standard MCP semantics — there is no separate transport layer to implement.
+
+For implementations where MCP is unavailable (offline agents, embedded systems), HPI methods MAY be exposed via plain HTTP+JSON. The method semantics and JSON shapes defined in this section are normative; the choice of transport (MCP vs HTTP) is non-normative.
+
+### 5.2. HPI methods (MCP tool surface)
+
+An HPI runtime MUST expose the following methods. All methods take JSON arguments and return JSON results.
+
+#### 5.2.1. `hpi.request_context`
+
+Agent requests permission to read scoped substrate context.
+
+**Arguments:**
+```json
+{
+  "purpose": "<machine-tag>",
+  "purpose_text": "<human-readable description>",
+  "scope": {
+    "axiom_families": ["OBL", "RCG"],
+    "axiom_ids": [],
+    "layers": ["L1", "L2"],
+    "actions": ["read"]
+  },
+  "expiry_seconds": 3600,
+  "agent_did": "did:agent:<id>"
+}
+```
+
+**Returns (success):**
+```json
+{
+  "token": "<signed-jwt>",
+  "issued_at": "2026-05-06T10:43:00Z",
+  "expires_at": "2026-05-06T11:43:00Z",
+  "approved_scope": { /* may be narrower than requested */ }
+}
+```
+
+**Returns (denial):**
+```json
+{
+  "error": "denied",
+  "reason": "<machine-code>",
+  "reason_text": "<human-readable explanation>",
+  "request_id": "<for-audit-correlation>"
+}
+```
+
+#### 5.2.2. `hpi.consume_token`
+
+Agent presents a token to retrieve scoped data.
+
+**Arguments:**
+```json
+{
+  "token": "<signed-jwt>",
+  "action": {
+    "type": "query_obligations",
+    "filters": {"supplier": "<de-vendor-corp>", "period": "2026-04"}
+  }
+}
+```
+
+**Returns (success):**
+```json
+{
+  "data": [ /* array of typed entities filtered to scope */ ],
+  "consumed_at": "2026-05-06T10:43:15Z",
+  "audit_event_id": "<l0-entity-id>"
+}
+```
+
+**Returns (failure):**
+```json
+{
+  "error": "<error-code>",
+  "reason_text": "<explanation>"
+}
+```
+
+Standard error codes: `token_expired`, `token_consumed`, `token_revoked`, `signature_invalid`, `scope_violation`, `audience_mismatch`.
+
+#### 5.2.3. `hpi.revoke_token`
+
+Substrate-holder revokes an active token.
+
+**Arguments:**
+```json
+{
+  "jti": "<token-id>",
+  "reason": "user-initiated",
+  "issuer_signature": "<signed-revocation-attestation>"
+}
+```
+
+**Returns:**
+```json
+{
+  "revoked_at": "2026-05-06T11:55:00Z",
+  "audit_event_id": "<l0-entity-id>"
+}
+```
+
+The revocation MUST be propagated to the runtime's revocation list (§4.6.1) within 5 seconds (RECOMMENDED) or 60 seconds (REQUIRED).
+
+#### 5.2.4. `hpi.audit_query`
+
+Substrate-holder queries their own audit trail. This method is restricted to the substrate-holder's authenticated session — agents cannot call it.
+
+**Arguments:**
+```json
+{
+  "filters": {
+    "since": "2026-05-01T00:00:00Z",
+    "agent_did": "did:agent:<id>",
+    "purpose": "reconcile-supplier-statement",
+    "event_types": ["hpi_token_consumed"]
+  },
+  "limit": 100
+}
+```
+
+**Returns:**
+```json
+{
+  "events": [
+    {
+      "id": "<l0-entity-id>",
+      "type": "hpi_token_consumed",
+      "timestamp": "2026-05-06T10:43:15Z",
+      "fields": { /* event-type-specific */ }
+    }
+  ],
+  "next_cursor": "<opaque>"
+}
+```
+
+#### 5.2.5. Optional: `hpi.discover`
+
+Returns runtime capabilities, supported axiom families, supported v-spec versions. Useful for agents adapting to runtime variants.
+
+### 5.3. Discovery
+
+A substrate-holder publishes a discovery document at a well-known URL:
+
+```
+GET https://<holder-domain>/.well-known/hpi.json
+{
+  "version": "0",
+  "issuer": "did:web:<holder-domain>",
+  "runtime_endpoint": "https://hpi.<holder-domain>/v0",
+  "transport": ["mcp", "http+json"],
+  "supported_axiom_families": ["OBL", "RCG", "TRU", "PAT"],
+  "key_endpoint": "https://<holder-domain>/.well-known/jwks.json",
+  "revocation_endpoint": "https://hpi.<holder-domain>/.well-known/hpi/revocations.json"
+}
+```
+
+This pattern is borrowed from OAuth 2.0 well-known endpoints (RFC 8414) and OpenID Connect Discovery. It allows agents to bootstrap with a single domain name and discover everything else.
+
+**Self-hosted holders** publish their own well-known URL on a domain they control.
+
+**Hosted holders** (using a managed HPI runtime provider, e.g., a future Stripe-of-substrate company) point their well-known URL at the provider's runtime, but the issuer DID and signing keys remain under the holder's control. This is the structural analog of self-custody crypto wallets running on hosted infrastructure — the keys never leave the holder.
+
+### 5.4. Storage interface (non-normative)
+
+The protocol does NOT prescribe a storage backing. Implementations choose. For interop, implementations SHOULD document the storage interface they expose so adjacent implementations can swap.
+
+**Recommended storage shapes:**
+
+- **L0 blob store** — content-addressed, append-only, immutable. Reference implementations: filesystem with content-hash naming, S3-compatible object storage, IPFS, Plurality OCL vault, Solid pod, Supabase Storage.
+- **L1+ typed store** — structured, queryable, RLS-gated. Reference implementations: Postgres+JSONB, sqlite, MotherDuck, IPLD.
+- **Audit log** — append-only L0 stream specific to HPI events. SHOULD use the same L0 blob store as the rest of the substrate, tagged with a stable type (`hpi_audit_event`) for downstream extraction.
+
+**Storage MUST be at-rest-encrypted with keys controlled by the substrate-holder.** Implementations MAY support hosted offerings where the runtime provider operates the storage, but the encryption keys MUST NOT be accessible to the runtime provider. This is the structural constraint that distinguishes HPI from platform-memory: a hosted HPI runtime has zero ability to read the substrate it stores. Without this constraint, the architecture collapses back into a platform-memory pattern.
+
+### 5.5. Token signing keys
+
+Tokens are signed by the substrate-holder's signing key. Standard key management:
+
+- **Active key** — current signing key, published in the holder's JWKS endpoint
+- **Rotation policy** — recommended 90-day rotation; old keys remain in JWKS for verification of in-flight tokens but are not used for new signing
+- **Compromise recovery** — if a key is compromised, the holder publishes a revocation of all tokens issued by that key, then rotates. Tokens already consumed are not affected (the audit trail records what happened); tokens not yet consumed become invalid.
+
+**Key custody in v0:** the substrate-holder's runtime holds the key. v0.1 will introduce options for split-key custody (HSM, threshold signatures, hardware tokens via WebAuthn).
+
+### 5.6. Versioning
+
+The wire format is versioned via the `version` field in tokens and discovery documents. This document specifies version `"0"`. Backwards-incompatible changes increment the version. Forward-compatible additions (new axiom families, new method options) are non-breaking and do not increment.
+
+Implementations SHOULD support multiple versions side-by-side during transitions; agents and runtimes negotiate the highest mutually-supported version per session.
 
 ---
 
