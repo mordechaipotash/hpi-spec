@@ -8,11 +8,11 @@ Pre-publication review simulation pipeline. Reviewers' real positions are resear
 |---|---|---|---|---|---|---|
 | 1 | [Alex Karp](reviewers/karp.md) | ✅ | [✅](projections/karp.md) | [✅](simulated-reviews/karp.md) | [✅](responses/karp.md) | pending real review |
 | 2 | [Sarah Wooders](reviewers/wooders.md) (Letta) | ✅ | [✅](projections/wooders.md) | [✅](simulated-reviews/wooders.md) | [✅](responses/wooders.md) | pending real review |
-| 3 | [Andrej Karpathy](reviewers/karpathy.md) | 📝 STUB | — | — | — | — |
+| 3 | [Andrej Karpathy](reviewers/karpathy.md) | ✅ | [✅](projections/karpathy.md) | [✅](simulated-reviews/karpathy.md) | [✅](responses/karpathy.md) | pending real review |
 | 4 | [Tim Berners-Lee](reviewers/berners-lee.md) | 📝 STUB | — | — | — | — |
 | 5 | [Sam Altman](reviewers/altman.md) (OpenAI) | 📝 STUB | — | — | — | — |
 
-## Pipelines complete (2 of 5)
+## Pipelines complete (3 of 5)
 
 ### Karp pipeline produced:
 - **7 spec revisions** committed (cross-Ontology framing in §3.7, PAT promoted to Reference Domain Ontology, substrate-holder primitive in §2.1 + institutional example, etc.)
@@ -26,19 +26,36 @@ Pre-publication review simulation pipeline. Reviewers' real positions are resear
 - **1 acknowledged philosophical disagreement** (agent persistence-as-self alignment risk vs foundation of capability) at axiom level
 - **4 substantive endorsements** catalogued for positioning
 
-### Convergent finding (high-signal):
+### Karpathy pipeline produced:
+- **5 spec revisions** committed (§4.12 boundary conditions, §1.8 what HPI does not solve, §6 citation validator, §6.3 microHPI aesthetic, anthropomorphic-language pass)
+- **1 NEW DESIGN VECTOR** (the distillation gap): per-person LoRA / sovereign fine-tuning rights as complementary primitive HPI v0 doesn't address. **This is genuinely new ground vs Karp+Wooders.**
+- **6 substantive endorsements** catalogued (highest of the three reviewers — most aligned with HPI's positions)
 
-Karp's "meta vs Ontology" critique and Wooders' "kernel vs process" critique are **structurally the same observation**: the spec tends to claim more than it enforces, and HPI's value is as a boundary protocol that other architectures ride on. Two independent simulations from different angles point at the same fix. The combined revision (clarifying what HPI specifies vs what it recommends; honoring layer-vs-content distinction) addresses both.
+### Convergence finding (TRIPLY CONFIRMED):
 
-**Combined: 15 spec revisions across 2 simulations, ~15-20 hours of revision work.**
+Karp's "meta vs Ontology," Wooders' "kernel vs process," and Karpathy's "context window IS working memory" are **structurally the same observation arrived at via three different routes**:
 
-## Order of priority for remaining 3
+- **Karp:** economic / systems design — what does the protocol guarantee at boundary?
+- **Wooders:** systems architecture — access control conflated with identity persistence
+- **Karpathy:** transformer mechanics — protocol-layer scoping cannot constrain inference once tokens are in context
 
-1. **Karpathy** next — high-signal LLM-systems voice; Twitter active so real engagement likely
-2. **Berners-Lee** — protocol elder; real engagement low-probability but high-impact
-3. **Altman** — least likely real engagement; highest forcing function for response prep
+**Three independent priors → three different routes → same conclusion.** This is high-signal evidence that the spec genuinely has the claim-vs-enforcement issue and the planned revisions address something real, not artifact-of-simulation.
 
-Recommend running Karpathy (3rd simulation) before deciding whether to continue. If Karpathy's simulation surfaces critiques substantially divergent from Karp + Wooders, the methodology has more to offer; if Karpathy converges on the same observations, diminishing returns set in.
+### Divergence finding (Karpathy alone):
+
+Karpathy adds the distillation/continual-learning gap. The right primitive for sovereign personalization may be per-person LoRA / sovereign fine-tuning rights, not scoped-view tokens. HPI v0 doesn't address this. Whether to extend to v1 is now a real architectural question, named in §1.8.
+
+**Combined: 22 distinct spec revisions across 3 simulations, ~25-30 hours of revision work.**
+
+## Order of priority for remaining 2
+
+The methodology recommends STOPPING here. Three simulations have triply-confirmed the central spec issue and surfaced one genuinely new design vector. Berners-Lee and Altman would likely converge on the same central finding with new flavor (governance and hyperscaler-defense respectively) but unlikely to surface another design vector as substantial as Karpathy's distillation gap.
+
+If continuing:
+1. **Berners-Lee** — protocol elder; real engagement low-probability but high-impact for credibility if it happens
+2. **Altman** — least likely real engagement; highest forcing function for response prep
+
+Recommend executing the 22 spec revisions before further simulations. The methodology has produced what it was designed to produce.
 
 ## What this is NOT
 
