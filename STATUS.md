@@ -24,10 +24,10 @@ Do NOT publish to GitHub / share publicly until:
 | SPEC.md §3 — Typed Axiom Grammar | ✅ DRAFT | Full draft, references existing axiom files |
 | SPEC.md §4 — Token Handoff Protocol | ✅ DRAFT | Full draft, ~1800 words. JWT format, scope structure, issuance flow, single-use, revocation, audit trail, delegation, worked example |
 | SPEC.md §5 — Wire Format & Transport | ✅ DRAFT | Full draft, ~1200 words. MCP method JSON shapes, discovery, storage interface, key management, versioning |
-| SPEC.md §6 — Reference Implementation | 📝 OUTLINE | Brain MCP + Viter L0-L3 are existence proofs |
-| SPEC.md §7 — Non-Goals | 📝 OUTLINE | List in README; expand to ~400 words |
-| SPEC.md §8 — Open Questions | 📝 OUTLINE | RFC-style items, ~500 words |
-| SPEC.md §9 — Acknowledgements | 📝 OUTLINE | Lineage in README; expand to ~200 words |
+| SPEC.md §6 — Reference Implementation | ✅ DRAFT | ~700 words. Existence proofs (Brain MCP / Viter / Persofi), gap-analysis matrix, v0.1 reference target, conformance criteria |
+| SPEC.md §7 — Non-Goals & Anti-Patterns | ✅ DRAFT | ~750 words. 6 non-goals + 3 anti-patterns including hosted-runtime-with-vendor-keys and silent-agent-persistence |
+| SPEC.md §8 — Open Questions for the Community | ✅ DRAFT | ~1000 words across 8 RFC-style items including governance/naming/composition with adjacent standards |
+| SPEC.md §9 — Acknowledgements & Lineage | ✅ DRAFT | ~600 words. 8 explicit precedents including Torah sourceability discipline credited honestly |
 | axioms/OBL-obligations.md | ✅ DRAFT | Imported from viter-workspace/ontology/ |
 | axioms/RCG-recharges.md | ✅ DRAFT | Imported |
 | axioms/TRU-trust.md | ✅ DRAFT | Imported |

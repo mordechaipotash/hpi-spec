@@ -751,31 +751,212 @@ Implementations SHOULD support multiple versions side-by-side during transitions
 
 ## 6. Reference Implementation Pointers
 
-*[OUTLINE — to be expanded. ~400 words target.]*
+A specification without working code is theology. This section names the closest existing implementations of HPI's components as of 2026-05-06, identifies the gaps between them and a complete HPI runtime, and specifies the minimum target for a v0.1 reference implementation.
 
-Closest existing working implementation as of 2026-05-06: Mordechai's Brain MCP (377K-message corpus) + Viter L0–L3 pipeline (chat-log + WhatsApp + transcripts → daily L1/L2/L3 with cite-or-die discipline) + Persofi reconciliation (working axiom-typed OBL/RCG/TRU/PAT data on <client-corp>'s books). These are the existence proofs.
+### 6.1. Existing implementations that satisfy parts of HPI
 
-Minimum reference implementation v0.1 target: Python or TypeScript module that issues + verifies tokens, exposes MCP-compatible API, demonstrates one full axiom family (OBL).
+**Brain MCP** (Mordechai Potash, 2024–present)
+- ~400K-message indexed personal corpus, semantically searchable via 82K embeddings
+- MCP server exposing the corpus to Claude Code and other MCP-compatible agents
+- Implements: L0 blob storage (filesystem-backed), L1 extraction (per-conversation summaries), L2 semantic search, audit logging
+- Does NOT yet implement: HPI token issuance/consumption, scoped agent borrowing, cite-or-die enforcement at the API surface
+
+**Viter L0→L3 pipeline** (Mordechai Potash + Shaul Levine, 2026-04–present)
+- Three substrate streams (chat-log, whatsapp, transcripts) each with deterministic L1 extraction (Python scripts) and LLM-driven L2 synthesis
+- L3 cross-stream fusion via daily-rebuild hook (`SessionEnd → rebuild-pipeline.sh`)
+- Implements: full L0–L3 layering with cite-or-die discipline, intertemporal collapse mechanism via `_now.md` regeneration
+- Does NOT yet implement: token-mediated agent access, multi-substrate boundary handoff
+
+**Persofi reconciliation** (financial-vertical product on Viter platform, 2026-04–present)
+- Working axiom-typed OBL/RCG/TRU/PAT data on one pilot client's books
+- Implements: typed L1 evidence extraction, L2 obligation projection per the OBL family, partial RCG margin attribution
+- Does NOT yet implement: PAT lifecycle, full TRU scoring, HPI token surface
+
+### 6.2. Gap analysis: what these implementations don't yet do
+
+| HPI requirement | Brain MCP | Viter L0–L3 | Persofi |
+|---|---|---|---|
+| L0 immutable storage | ✅ | ✅ | ✅ |
+| L1 deterministic extraction | ✅ | ✅ | ✅ |
+| L2 attributed synthesis | ⚠️ partial | ✅ | ✅ |
+| L3 personal surface | ⚠️ via search | ✅ | ❌ |
+| Typed axiom grammar | ❌ | ❌ | ✅ |
+| HPI token issuance | ❌ | ❌ | ❌ |
+| HPI token consumption | ❌ | ❌ | ❌ |
+| Audit trail as L0 stream | ⚠️ partial | ⚠️ partial | ❌ |
+| Cross-substrate boundary collapse | ❌ | ❌ | ❌ |
+| Agent never owns L3 | ✅ enforced by architecture | ✅ enforced by architecture | N/A |
+
+The existence proof: every individual HPI requirement has been met by some part of one of these implementations. No single implementation meets all requirements simultaneously. **The gap is integration, not invention.**
+
+### 6.3. Minimum v0.1 reference implementation target
+
+A v0.1 reference HPI runtime SHOULD provide:
+
+1. **Token issuance + verification** — JWT issue/verify with the v0 claim shape from §4.2; signing key management; `jti` consumption tracking; revocation list publication.
+2. **MCP method surface** — the four required methods from §5.2 exposed as MCP tools.
+3. **One axiom family end-to-end** — OBL is the recommended starting family because it has full v0 documentation, a worked example, and existing Persofi production data. Any third-party reference can use synthetic obligations.
+4. **L0 blob store backing** — filesystem reference; documented interface so alternative backings (S3, OCL, IPFS, Solid) drop in.
+5. **Audit log as L0 stream** — emit `hpi_*` events back into the substrate's L0 store.
+6. **Discovery document** — `.well-known/hpi.json` served from a configurable domain.
+
+**Estimated build cost:** ~80–120 hours for a single experienced engineer to ship a functional v0.1 reference covering all six requirements. ~30 hours if reusing Brain MCP's MCP server scaffolding.
+
+**Languages:** Python or TypeScript recommended. Both have mature MCP server libraries, JOSE/JWT libraries, and JSON Schema validators.
+
+### 6.4. Conformance criteria
+
+An implementation is **HPI v0-conformant** if it:
+- Exposes the four required methods from §5.2 with matching JSON shapes
+- Issues tokens matching the v0 claim shape from §4.2
+- Honors single-use semantics for tokens with `single_use: true`
+- Publishes a revocation list at the `/.well-known/hpi/revocations.json` endpoint
+- Emits audit events to the substrate-holder's L0 store on every token lifecycle event
+- Refuses scope-violating consumption requests
+- Does NOT retain plaintext L1+ content outside the substrate-holder's encrypted store
+
+A conformance test suite is scope for v0.1. Self-attestation is acceptable for v0.
 
 ---
 
 ## 7. Non-Goals & Anti-Patterns
 
-*[OUTLINE — to be expanded. ~400 words target. See `README.md` "What HPI is not" for v0 list.]*
+HPI is constrained by what it deliberately refuses to be. This section names the constraints; agents reading this spec should infer that adjacent problems are out of scope and adjacent solutions are not endorsed.
+
+### 7.1. HPI is NOT a model
+
+LLMs remain LLMs. HPI does not constrain model architecture, training data, fine-tuning practices, or inference behavior. It constrains what data the model has access to during a transaction and what records of that access accrue afterwards. Any model — open-weights or hosted — can operate under HPI as long as the implementation surrounding the model honors the token semantics and audit requirements.
+
+### 7.2. HPI is NOT a memory product
+
+Mem0, Letta/MemGPT, Khoj, Pieces, and Rewind solve memory. HPI is one layer above. Memory products manage how an agent retains and retrieves context within their architecture; HPI specifies the substrate-boundary protocol that determines who OWNS the substrate the memory is built against. A memory product can be HPI-compliant by routing its read/write operations through HPI tokens. A memory product is HPI-incompatible if the memory accumulates as the platform's asset rather than the user's.
+
+### 7.3. HPI is NOT a wallet
+
+No native token. No cryptocurrency. No token economics. The "tokens" in HPI are JWT-style or VC-style access credentials — short-lived, single-use, revocable. They have no on-chain representation, no transferability, no market value. Implementations using blockchain primitives (DIDs anchored to chains, content-addressed storage on IPFS) are permitted but not required.
+
+### 7.4. HPI is NOT blockchain-required
+
+Implementations may use Web3 primitives (Ceramic, IPFS, ENS, Solid) or pure HTTP+JWT+filesystem. The protocol is silent on storage backing. Implementations choosing Web3 backings inherit Web3's tradeoffs (latency, finality, key management); implementations choosing centralized HTTP backings inherit those tradeoffs (host availability, key custody). HPI's conformance requirements are agnostic to either choice.
+
+### 7.5. HPI is NOT anti-LLM
+
+LLMs are extraordinarily useful. HPI's whole point is to enable agents (LLM-powered or otherwise) acting on the user's behalf with appropriate access controls. The constraint is on substrate ownership, not on AI utility. An HPI-compliant LLM-based agent has full access to the human's substrate via tokens; the human retains the ability to revoke that access at any time and audit what the agent did with it.
+
+### 7.6. HPI is NOT anti-platform
+
+A platform CAN be HPI-compliant. Doing so requires:
+- The platform issues tokens against the user's substrate, not the platform's own user-context store
+- The platform emits audit events to the user's substrate, not the platform's logs
+- The platform's encryption keys for storing user data are user-controlled, not platform-controlled
+- The platform's terms of service do NOT claim ownership of accumulated user context
+
+A platform that meets these constraints can offer HPI-compliant memory, personalization, and agentic features. The constraint kills certain monetization patterns (selling aggregated user data, training on accumulated context without consent) but doesn't kill the product.
+
+### 7.7. Anti-pattern: hosted runtime with vendor-held keys
+
+The most subtle failure mode is a hosted HPI runtime where the runtime provider holds the encryption keys to the substrate. This re-creates platform-memory under the cosmetic appearance of sovereignty: the user appears to own their substrate, but the runtime provider can read it.
+
+HPI v0 forbids this pattern. Hosted runtimes MUST be technically equivalent to self-hosting from a sovereignty standpoint — encryption keys held by the user (HSM, hardware token, password-derived key, key-shard recovery), runtime operating only on encrypted blobs and short-lived in-memory plaintext.
+
+### 7.8. Anti-pattern: mixing axioms across substrate boundaries without re-validation
+
+When axiom-typed L0 entities cross substrate boundaries, the receiving substrate MUST treat them as new L0 entities subject to the receiver's own validation rules. Inheriting trust ("this OBL was validated in Mordechai's substrate, so I'll trust it") is not permitted by default. The receiving substrate's TRU axiom assigns trust to the sender; high-trust senders can have their axioms accepted with lighter validation, but the validation step is not skippable.
+
+### 7.9. Anti-pattern: silent agent persistence
+
+An agent that retains user-derived state across transactions WITHOUT writing audit events to the substrate violates the spec, even if the retention is "innocent" (e.g., conversational context for a follow-up turn). All cross-transaction state MUST be either: (a) explicitly scoped via a long-lived token, with corresponding audit events, or (b) discarded between transactions. There is no third option.
 
 ---
 
 ## 8. Open Questions for the Community
 
-*[OUTLINE — to be expanded. ~500 words target.]*
+This section enumerates issues that v0 leaves intentionally open, in RFC-style format. Implementers and reviewers are invited to engage with these questions; positions taken here will inform v0.1.
 
-RFC-style discussion items: protocol naming (HPI confirmed as brand), axiom family naming + count, token format (JWT vs W3C VC), transport (MCP-only vs HPI-native), composition with existing protocols (OAuth, AT Protocol, Solid, OCL), agent-to-agent delegation, hyperscaler-memory migration path.
+### 8.1. Axiom family naming and count
+
+The v0 axiom families (OBL, RCG, TRU, PAT) are drawn from one vertical (financial operations with patent-prosecution focus) because that's where existing production code lives. Are these names broadly applicable to other domains, or vertical-specific?
+
+- **OBL** generalizes well — obligations exist in healthcare (treatment plans), legal (contracts), software (commitments in code reviews), academic (paper-citation obligations).
+- **RCG** as "recharges" is finance-specific; as "recognitions / renewals" it generalizes to attestations, periodic review.
+- **TRU** generalizes — trust is universal.
+- **PAT** as "patents" is IP-specific; as "patterns" it might generalize to recurring artifacts in any domain.
+
+**Question for community:** rename PAT and possibly RCG for cross-vertical legibility, or keep finance-specific names with a clear convention that other verticals add their own families (e.g., MED-* for medical, LEG-* for legal)?
+
+### 8.2. Token format: JWT vs W3C Verifiable Credentials
+
+v0 specifies signed JWT. v0.1 path to W3C VC is sketched but not committed. JWT is universally implementable today; VC adds cryptographic provenance for third-party audit without contacting issuer.
+
+**Question for community:** is JWT sufficient long-term, or should v1.0 mandate VC? Tradeoff: VC tooling is less mature in 2026 but better-aligned with the substrate-conservation thesis (third-party-auditable provenance maps cleanly onto cross-substrate citation chains).
+
+### 8.3. Transport: MCP-only vs HPI-native RPC
+
+v0 extends Anthropic MCP. Pros: existing tool ecosystem, no new RPC to specify. Cons: MCP is Anthropic-controlled (though Apache 2.0); evolution of MCP is not under HPI control; an HPI-native RPC could optimize for HPI-specific patterns.
+
+**Question for community:** in v1.0, should HPI define its own RPC layer, or remain an MCP extension? The protocol-vs-platform tradeoff matters: an MCP-extension HPI inherits MCP's adoption but also its constraints; an HPI-native RPC owns its evolution but loses interop with the broader MCP tool ecosystem.
+
+### 8.4. Composition with existing open standards
+
+HPI builds on multiple precedents but doesn't yet specify integration patterns:
+
+- **OAuth 2.1 / OIDC** — how does an OAuth-authenticated session originate an HPI token? The natural composition is OAuth authenticates the substrate-holder; HPI tokens are then issued under their authority.
+- **AT Protocol** (Bluesky's social-graph protocol) — both protocols treat the user's data as user-owned. AT Protocol is social-graph-shaped; HPI is cognitive-substrate-shaped. Composition: AT Protocol's `did:plc` identifiers as HPI substrate-holder DIDs.
+- **Solid** — Solid pods are L0 blob stores. An HPI implementation backed by Solid is a clean composition.
+- **Plurality OCL** — context vaults as L0 backing. Most active integration target. See `outreach/PLURALITY.md`.
+- **W3C VC/DID** — for v0.1 token format upgrade.
+
+**Question for community:** which of these compositions is highest-priority for v0.1? The answer probably depends on which adjacent ecosystem ships interesting HPI use cases first.
+
+### 8.5. Agent-to-agent delegation semantics
+
+§4.8 specifies three modes (forbid / attenuate / re-request). v0 only requires `forbid`. v0.1 adds attenuation (macaroon-style) and re-request flows. The unresolved question: when delegation chains span multiple substrate-holders (Alice's agent invokes Bob's agent), how does the audit trail compose? Each holder needs to see their own slice; cross-substrate correlation requires a shared identifier scheme.
+
+**Question for community:** is there prior art (capability-based security literature, distributed-systems audit research) that solves cross-substrate audit composition cleanly?
+
+### 8.6. Migration from hyperscaler-stored memory
+
+Users with accumulated context in OpenAI Memory, Google Gemini personalization, or Anthropic Projects need a migration path to HPI substrate. The platforms are unlikely to provide structured exports; the migration is closer to "ingestion of unstructured memory dumps" than "schema migration."
+
+**Question for community:** what does an "HPI ingestion bridge" look like for hyperscaler-stored memory? Is there a use case where HPI-storage + hyperscaler-memory coexist (the user's substrate has L0 entities representing the hyperscaler memory, with `creator: did:web:openai.com` provenance), or does the architecture require a clean break?
+
+### 8.7. The hard naming question
+
+"HPI" is the working brand. Subtitle is currently "Hyperpersonalized API." Alternative subtitle considered: "Sovereign Cognitive Substrate Protocol."
+
+**Question for community:** does HPI as an acronym still resonate when the protocol matures? Or should the brand evolve toward a more self-explanatory name? Past protocol naming examples: SMTP (Simple Mail Transfer Protocol — operationally descriptive), OAuth (Open Authorization — clear), MCP (Model Context Protocol — recent and clear). HPI as "Hyperpersonalized API" is suggestive but less self-explanatory.
+
+### 8.8. The trillion-dollar question
+
+If HPI succeeds as a category, the value distributes across an ecosystem (hosted runtime providers, axiom-family libraries, agent platforms). No single entity captures $1T from this protocol — the same pattern as SMTP or HTTP. But the category at scale is plausibly $1T+ in transaction value passing through HPI-typed boundaries.
+
+**Question for community:** what governance model best preserves protocol neutrality at scale? A foundation (Mozilla, Linux Foundation, Apache Software Foundation precedents)? A consortium (W3C model)? A pure RFC process? The decision affects long-term incentive alignment of HPI-compliant infrastructure providers.
 
 ---
 
 ## 9. Acknowledgements & Lineage
 
-*[OUTLINE — to be expanded. ~200 words target. See `README.md` "Conceptual lineage".]*
+HPI is not a clean-room invention. It synthesizes precedents from multiple traditions; honest acknowledgement of those precedents is itself a substrate-conservation discipline (cite-or-die at the meta-level).
+
+**Solid (Tim Berners-Lee, W3C, 2015–present)** — the personal-data-pod precedent. Solid established the position that user data should be user-owned and accessed via user-issued permissions. HPI adopts this stance and extends it from data to cognitive substrate, adding the layer model and typed axiom grammar that Solid omits.
+
+**Anthropic Model Context Protocol (Anthropic, 2024–present)** — the transport HPI extends. MCP is the JSON-RPC envelope that lets HPI methods be discovered as tools by any MCP-compatible agent. Anthropic published MCP as Apache 2.0 in November 2024; without that openness, HPI would have to define its own transport.
+
+**Plurality / Open Context Layer (2025–present)** — fellow-traveler at the storage substrate layer. OCL provides user-owned encrypted vaults with MCP-native access; HPI specifies the typed grammar and access protocol that runs on top of such vaults. Identified as ally not competitor in early 2026; outreach in `outreach/PLURALITY.md`.
+
+**Letta / MemGPT (UC Berkeley Sky Computing Lab, 2023–present)** — directionally aligned on principled agent-context management. Letta's Context Constitution (April 2 2026) is the most architecturally serious document in agent-context space. HPI inverts Letta's axiom (agents own context → agents borrow context) but adopts Letta's seriousness about typed context management. Comparison in `comparisons/LETTA.md`.
+
+**W3C Verifiable Credentials and Decentralized Identifiers (W3C, 2017–present)** — cryptographic primitives for v0.1 token issuance. SpruceID, Veramo, and the broader VC/DID community provide the toolchain HPI will adopt for cryptographically-provable provenance.
+
+**OAuth 2.1 / capability-based security (IETF, 2012–present; Birgisson et al. macaroons, 2014; Biscuits at CleverCloud, 2019)** — scoped access patterns. HPI's token model is a cousin of OAuth 2.1's scope mechanism, with single-use semantics borrowed from short-lived access-token patterns and delegation semantics borrowed from macaroons.
+
+**Torah sourceability discipline (*l'havdel elef avdal*)** — the cite-or-die rule's intellectual lineage. The Talmudic discipline that every claim must be sourced to its origin (passuk → Mishnah → Gemara → Rishonim → Achronim) is the structural ancestor of HPI's layer-citation rule. Crediting this lineage honestly is unusual for a protocol document and is intentional. The architectural discipline of strict sourceability is not invented by Western computer science; it has a 2000-year-old engineering tradition that HPI consciously inherits.
+
+**Brain MCP and Viter L0→L3 pipeline (Mordechai Potash + Shaul Levine, 2024–present)** — the working implementations from which HPI's specification is extracted. Without Brain MCP's existence as a personal cognitive prosthetic, HPI's claims about substrate-as-prosthetic would be theoretical. Without Viter's L0→L3 pipeline running in production, HPI's layering rules would be untested.
+
+**The substrate conservation insight (Mordechai Potash, 2026-05-06)** — the specific articulation that "L3 published across a substrate boundary becomes the next holder's L0" is the load-bearing novel claim of this spec. Prior precedents articulate user-data ownership and citation chains separately; the conservation law that unifies them across both interpersonal and intertemporal substrate boundaries is, to the editor's knowledge, unique to this document.
+
+This document stands on the shoulders of all of the above. Where it adds something new, it is the unification — not the components.
 
 ---
 
