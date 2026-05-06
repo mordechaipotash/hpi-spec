@@ -537,6 +537,8 @@ The default `single_use: true` means a token's `jti` is consumed on first call t
 
 Multi-use tokens (`single_use: false`) are permitted but DISCOURAGED. They exist for narrow operational scenarios (e.g., a long-running agent that needs continuous read access for a single user-initiated reconciliation run). Multi-use tokens MUST have stricter expiry (RECOMMENDED 5 minutes) and MUST log every consumption event individually.
 
+See [`THREAT-MODEL.md`](THREAT-MODEL.md) §7.1 for the JTI consumption atomicity requirements implementations MUST honor under concurrent `consume_token` calls, and §7.2 for multi-instance runtime consensus.
+
 ### 4.6. Revocation
 
 The substrate-holder MAY revoke any active token at any time.
@@ -559,6 +561,8 @@ GET /.well-known/hpi/revocations.json
 
 Agents MUST check this list before consuming a token if the time elapsed since `iat` exceeds 60 seconds. Implementations MAY cache the list with HTTP caching semantics; agents MUST honor `Cache-Control` from the issuer.
 
+See [`THREAT-MODEL.md`](THREAT-MODEL.md) §7.3 for network-boundary replay semantics across the cache window, and §6.6 for forbidden custody patterns that bypass revocation entirely.
+
 #### 4.6.2. Reasons
 
 Standard revocation reasons:
@@ -580,6 +584,8 @@ Standard audit-event types:
 The audit trail is itself a substrate stream (parallel to chat-log, whatsapp, transcripts). It is L0; deterministic L1 extracts roll up by day / by agent / by purpose; L2 syntheses surface anomalies. Because the audit trail is in the substrate, the substrate-holder owns their own audit, full stop.
 
 This is the structural inversion of platform-mediated auditing — when OpenAI logs your prompts on their servers, the audit lives in OpenAI's substrate. When HPI logs your tokens, the audit lives in YOURS.
+
+See [`THREAT-MODEL.md`](THREAT-MODEL.md) §5.9 for the inference-pipeline exfiltration vector that escapes the audit (legitimate token consumption followed by upstream-LLM forwarding), and §8.1–§8.2 for incident detection and containment using the audit trail as primary evidence.
 
 ### 4.8. Delegation
 
