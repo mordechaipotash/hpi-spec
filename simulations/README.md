@@ -1,37 +1,46 @@
 # Simulated Peer Reviews — HPI v0
 
-Pre-publication review simulation pipeline. Reviewers' real positions are researched, projected onto HPI, and converted to simulated reviews + author responses. Full methodology in [`meta/methodology.md`](meta/methodology.md).
+Pre-publication review simulation pipeline. Reviewers' real positions are researched, projected onto HPI, and converted to simulated reviews + author responses. Full methodology in [`meta/methodology.md`](meta/methodology.md). Cohort calibration in [`calibration/cohort-meta-evaluation.md`](calibration/cohort-meta-evaluation.md).
 
-## v1 reviewer cohort (5)
+## v1 cohort (3 of 5 executed; remaining 2 deprecated)
 
 | # | Reviewer | Phase 1 (dossier) | Phase 2 (projection) | Phase 3 (simulated review) | Phase 4 (response) | Phase 5 (real-vs-sim diff) |
 |---|---|---|---|---|---|---|
 | 1 | [Alex Karp](reviewers/karp.md) | ✅ | [✅](projections/karp.md) | [✅](simulated-reviews/karp.md) | [✅](responses/karp.md) | pending real review |
 | 2 | [Sarah Wooders](reviewers/wooders.md) (Letta) | ✅ | [✅](projections/wooders.md) | [✅](simulated-reviews/wooders.md) | [✅](responses/wooders.md) | pending real review |
 | 3 | [Andrej Karpathy](reviewers/karpathy.md) | ✅ | [✅](projections/karpathy.md) | [✅](simulated-reviews/karpathy.md) | [✅](responses/karpathy.md) | pending real review |
-| 4 | [Tim Berners-Lee](reviewers/berners-lee.md) | 📝 STUB | — | — | — | — |
-| 5 | [Sam Altman](reviewers/altman.md) (OpenAI) | 📝 STUB | — | — | — | — |
+| 4 | ~~Tim Berners-Lee~~ | **DEPRECATED** — excluded by cohort-vetter (too generic / unlikely engagement) | | | | |
+| 5 | ~~Sam Altman~~ | **DEPRECATED** — excluded by cohort-vetter (least likely engagement) | | | | |
 
-## Pipelines complete (3 of 5)
+## v2 cohort (replaces v1 #4 + #5; adds two new candidates)
 
-### Karp pipeline produced:
+| # | Reviewer | Critique axis | Engagement likelihood |
+|---|---|---|---|
+| 4 | [Christopher Allen](reviewers/allen.md) — SSI / W3C / TLS 1.0 co-author | DID + VC ecosystem | **HIGH** |
+| 5 | [Daniel Stenberg](reviewers/stenberg.md) (curl) | Wire-format completeness / IETF pragmatics | **HIGH** |
+| 6 | [Bruce Schneier](reviewers/schneier.md) | Cryptographic threat model / key custody (calibration test against THREAT-MODEL.md) | medium-high |
+| 7 | [Cory Doctorow](reviewers/doctorow.md) | Protocol economics / enshittification / capture dynamics | **HIGH** |
+
+## v1 cohort — what each pipeline produced
+
+### Karp pipeline:
 - **7 spec revisions** committed (cross-Ontology framing in §3.7, PAT promoted to Reference Domain Ontology, substrate-holder primitive in §2.1 + institutional example, etc.)
-- **1 new file** to draft (`THREAT-MODEL.md`) addressing the sharpest objection
-- **1 new framing claim** (HPI as cross-Ontology transport) strengthening positioning
-- **1 acknowledged philosophical disagreement** (meta-Ontologies as inherently academic) that survives revision
+- **THREAT-MODEL.md** drafted (highest-leverage single artifact)
+- **1 framing claim** (HPI as cross-Ontology transport) strengthening positioning
+- **1 acknowledged philosophical disagreement** (meta-Ontologies as inherently academic)
 
-### Wooders pipeline produced:
+### Wooders pipeline:
 - **8 spec revisions** committed (split §4.1 into access-control + persistence-recommendation, add §4.10 Failure modes, add §4.11 Learning across boundaries, etc.)
-- **1 new framing handle** ("HPI as kernel, stateful agents as processes") credited to Wooders
-- **1 acknowledged philosophical disagreement** (agent persistence-as-self alignment risk vs foundation of capability) at axiom level
-- **4 substantive endorsements** catalogued for positioning
+- **1 framing handle** ("HPI as kernel, stateful agents as processes") credited to Wooders
+- **1 acknowledged philosophical disagreement** (agent persistence-as-self alignment risk vs foundation of capability)
+- **4 substantive endorsements** catalogued
 
-### Karpathy pipeline produced:
+### Karpathy pipeline:
 - **5 spec revisions** committed (§4.12 boundary conditions, §1.8 what HPI does not solve, §6 citation validator, §6.3 microHPI aesthetic, anthropomorphic-language pass)
-- **1 NEW DESIGN VECTOR** (the distillation gap): per-person LoRA / sovereign fine-tuning rights as complementary primitive HPI v0 doesn't address. **This is genuinely new ground vs Karp+Wooders.**
-- **6 substantive endorsements** catalogued (highest of the three reviewers — most aligned with HPI's positions)
+- **1 NEW DESIGN VECTOR** (the distillation gap): per-person LoRA / sovereign fine-tuning rights as complementary primitive HPI v0 doesn't address
+- **6 substantive endorsements** catalogued
 
-### Convergence finding (TRIPLY CONFIRMED):
+### Triple-confirmed convergence finding:
 
 Karp's "meta vs Ontology," Wooders' "kernel vs process," and Karpathy's "context window IS working memory" are **structurally the same observation arrived at via three different routes**:
 
@@ -39,23 +48,43 @@ Karp's "meta vs Ontology," Wooders' "kernel vs process," and Karpathy's "context
 - **Wooders:** systems architecture — access control conflated with identity persistence
 - **Karpathy:** transformer mechanics — protocol-layer scoping cannot constrain inference once tokens are in context
 
-**Three independent priors → three different routes → same conclusion.** This is high-signal evidence that the spec genuinely has the claim-vs-enforcement issue and the planned revisions address something real, not artifact-of-simulation.
+**Three independent priors → three different routes → same conclusion.** This is high-signal evidence that the spec genuinely has the claim-vs-enforcement issue.
 
 ### Divergence finding (Karpathy alone):
 
-Karpathy adds the distillation/continual-learning gap. The right primitive for sovereign personalization may be per-person LoRA / sovereign fine-tuning rights, not scoped-view tokens. HPI v0 doesn't address this. Whether to extend to v1 is now a real architectural question, named in §1.8.
+Per-person LoRA / sovereign fine-tuning rights may be the correct architecture for durable sovereign personalization, complementary to scoped-view tokens. HPI v0 silent on this. §1.8 now names the gap explicitly.
 
-**Combined: 22 distinct spec revisions across 3 simulations, ~25-30 hours of revision work.**
+## Cohort meta-evaluation (2026-05-06)
 
-## Order of priority for remaining 2
+A parallel-session researcher dispatched against "find reviewers whose priors will surface NEW critiques beyond Karp/Wooders convergence" produced a ranked top-10 list. Findings:
 
-The methodology recommends STOPPING here. Three simulations have triply-confirmed the central spec issue and surfaced one genuinely new design vector. Berners-Lee and Altman would likely converge on the same central finding with new flavor (governance and hyperscaler-defense respectively) but unlikely to surface another design vector as substantial as Karpathy's distillation gap.
+- **v1 cohort: 2 right (Karp, Wooders), 1 lucky (Karpathy), 2 wrong (Berners-Lee, Altman).**
+- BL + Altman should be replaced with Allen + Stenberg as v2 cohort.
+- Schneier added (calibration test against just-shipped THREAT-MODEL.md).
+- Doctorow added (political-economic axis with HIGH engagement likelihood).
+- Two axes still uncovered after v2 top 10: equity/access (boyd) and cognitive science / human-prosthetic (Turkle proxy).
 
-If continuing:
-1. **Berners-Lee** — protocol elder; real engagement low-probability but high-impact for credibility if it happens
-2. **Altman** — least likely real engagement; highest forcing function for response prep
+Full analysis: [`calibration/cohort-meta-evaluation.md`](calibration/cohort-meta-evaluation.md).
 
-Recommend executing the 22 spec revisions before further simulations. The methodology has produced what it was designed to produce.
+## Spec impact across all simulations (so far)
+
+**22 distinct simulation-identified spec revisions** combined across Karp + Wooders + Karpathy.
+**19 already executed** (as of commit `1a358a1`).
+**3 still outstanding** (the lower-priority polish revisions).
+
+THREAT-MODEL.md drafted (covering Karp #4 + Schneier-predicted critiques).
+Chidush 019 ratified to HELD-BELIEFS.
+
+## Order of priority for v2
+
+1. **Allen** next — SSI/DID axis, orthogonal to all v1 critiques, HIGH engagement
+2. **Stenberg** — wire-format completeness, would produce JSON Schema requirements
+3. **Schneier** — calibration test of THREAT-MODEL.md
+4. **Doctorow** — capture dynamics + governance, HIGH engagement public exposure
+
+If Allen + Stenberg both converge on the central claim-vs-enforcement finding, the spec issue is **5-confirmed across maximum-distance priors** and we stop. If they diverge, each adds new ground.
+
+Recommend running Allen first, then evaluating whether to continue.
 
 ## What this is NOT
 
