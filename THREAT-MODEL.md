@@ -106,6 +106,22 @@ A nation-state actor with intelligence-grade capability targets HPI infrastructu
 
 **Capability:** Can perform classical APT operations: zero-days, supply-chain compromise, social engineering, lawful intercept where applicable.
 
+### Class G — Coercive Legitimate Operator
+
+The HPI runtime operator, model platform, or institutional intermediary acts within the letter of their permissions while exploiting the substrate-holder's switching costs to extract scope grants the holder would refuse if exit were costless.
+
+This is the *Technology Paternalism* adversary (Christopher Allen, "Dispatches of a Trust Architect: Fighting Technology Paternalism," March 2026): legitimate but coercive. Distinguished from Class E (Colluding Platform) by *legitimacy* — the operator does not violate the wire format; they violate the consent model by structurally narrowing the substrate-holder's ability to refuse.
+
+**Examples:**
+- Hosted runtime requires a privacy-policy update granting broader scope as a condition of continued service; refusing terminates the substrate-holder's access to their own substrate ("you can leave, but you leave empty-handed")
+- Model provider conditions API access on accepting boilerplate token scopes that exceed minimum-necessary-access for the human's actual use cases
+- Institutional employer issues HPI tokens against employee substrate as part of employment terms; refusal jeopardizes employment
+- Substrate-holder's family member, business partner, or co-resident leverages social pressure to obtain delegation-token issuance the holder would not grant absent that pressure
+
+**Capability:** Can rewrite operator-side terms of service, adjust default scope templates, condition continued service on consent. Cannot forge tokens or directly compromise substrate-holder keys, but does not need to — the holder grants the scope under structural duress.
+
+**Why HPI v0 cannot fully mitigate Class G:** the wire format cannot distinguish a freely-chosen scope grant from a coerced one. Mitigations are *operational* (anti-coercive design, multi-substrate fallback, regulatory enforcement of minimum-necessary-access) not *cryptographic*. See §5.8 and §7 anti-patterns.
+
 ---
 
 ## 3. Attack-vector matrix
@@ -219,6 +235,51 @@ HPI cannot prevent the agent's underlying LLM from hallucinating, lying, or acti
 
 If the substrate-holder approves overly broad scopes (e.g., always grants `L1+L2+L3+all-axiom-families` for `expiry: 30 days`), HPI cannot rescue them. The protocol provides the mechanism; the substrate-holder must use it well. Recommended-practice defaults SHOULD be conservative; implementations MAY warn on suspiciously broad scopes.
 
+### 5.8. Data-control path commingling at agent inference (Classes B, E, F)
+
+This is the **data/control path problem** named by Bruce Schneier in "LLMs' Data-Control Path Insecurity" (Communications of the ACM, May 2024) and applied here to HPI specifically. The structural failure mode:
+
+> *"The real problem is the commingling of data and commands. Prompt injection is structurally unfixable in current LLM architecture because data and control share the same channel."*
+
+When an HPI agent receives substrate content via a legitimate token, the returned tokens enter the LLM's context window. There is no mechanism in transformer inference that distinguishes substrate *data* from agent *instructions*. A substrate-holder who is also a Class C adversary (or a Class B compromised principal whose substrate has been poisoned) can inject content that the agent will execute as instruction. Conversely, an agent observing legitimate substrate content can be prompted by external input (Class B) to exfiltrate that content downstream — and the protocol cannot detect this within the inference call.
+
+HPI v0 does NOT mitigate this. The wire format ends at the runtime boundary; the inference layer is opaque to the protocol. Mitigations are at the agent-runtime layer:
+
+- Structured prompting with separator tokens that distinguish data from instruction (best-effort; not cryptographic)
+- Sandboxed inference where the agent has no outbound network during substrate-data processing
+- Output filtering to detect substrate-content exfiltration in agent outputs
+- Constitutional AI / inference-time monitoring (vendor-specific; out of HPI scope)
+
+**Implementations MUST acknowledge this limit explicitly** in deployment documentation. Substrate-holders relying on HPI for cognitive sovereignty should understand that the substrate is sovereign at rest but the inference processing it is not.
+
+### 5.9. AI Inference Pipeline as Exfiltration Vector (Classes E, G)
+
+This is Doctorow's *enshittification cover* applied to HPI. From "The enshittification multiverse" (April 27 2026):
+
+> *"AI is very enshittification-prone: as 'black boxes' that do not produce reliable, deterministic outputs, AI products have a lot of intrinsic cover for their enshittifying behavior."*
+
+A sovereign cognitive substrate protocol that stores personal data in user-controlled endpoints does NOT protect users from AI inference pipelines that process that data through a hyperscaler model before returning results. The path:
+
+1. Substrate-holder issues a legitimate, scoped, single-use HPI token to an agent
+2. Agent calls `hpi.consume_token`; runtime returns scoped substrate content
+3. Agent submits the content as part of a prompt to an external LLM (OpenAI, Anthropic, Google)
+4. The LLM provider receives the substrate content as input tokens
+5. The LLM provider may store, train on, or analyze these tokens per their terms of service
+6. Substrate-holder's audit trail shows agent consumed token; does NOT show LLM provider received content
+
+The substrate is "sovereign" at the storage layer while being effectively exfiltrated at the inference layer. The agent is HPI-compliant; the model provider is not bound by HPI.
+
+This is structurally adjacent to §5.8 but distinct: §5.8 is *data/control commingling within one inference call*; §5.9 is *legitimate agent inference as a substrate-content delivery mechanism to upstream model providers*.
+
+HPI v0 does NOT mitigate this. Mitigations require:
+
+- Substrate-holder explicit consent on a per-model-provider basis (operator-level)
+- Local-only inference (Allen's "Self-Sovereign Computing" pattern; eliminates this vector)
+- Per-content honeytokens / canary content with traceable signatures (operator-level mitigation)
+- Regulatory frameworks that bind model providers to use restrictions (out of protocol scope)
+
+**Implementations operating against hosted LLMs MUST disclose this exfiltration path to substrate-holders.** Reference implementations SHOULD support local-inference modes as a first-class deployment configuration.
+
 ---
 
 ## 6. Key custody patterns
@@ -306,6 +367,24 @@ Substrate-holders WILL lose keys. Plan for it.
 - Trust model: contacts are honest individually; collusion is rare
 - Recommended for individual substrate-holders without institutional backing
 
+**Adversarial modeling of social-recovery-set compromise** (Schneier-flagged residual risk):
+
+Social recovery has a known failure mode: the recovery set has the *effective root* of the substrate-holder's signing capability. An attacker who compromises M-of-N recovery contacts can reconstruct the secret and assume control. Real-world failure vectors include:
+
+- **Phishing of recovery contacts** at moment of legitimate recovery — attacker observes the holder's recovery attempt and races them to consume the M-of-N attestations
+- **Targeted social engineering** — attacker identifies recovery contacts (often from public OSINT or close relationships) and compromises them serially over time
+- **Coercion of recovery contacts** — particularly relevant in family / household contexts where the substrate-holder's recovery contacts can be pressured (a Class C / Class G adversary scenario)
+- **Long-term compromise** — attacker compromises 1-2 contacts over months, waits for substrate-holder to die or become incapacitated, then activates the remaining shards
+
+Mitigations to bind:
+- Recovery thresholds SHOULD be ≥ 3-of-5 for high-security deployments (raises attacker cost to compromise multiple parties)
+- Recovery contacts SHOULD be geographically and socially decorrelated (not all family members; not all in same employer)
+- Recovery operations SHOULD trigger a 24-hour delay + notification to the substrate-holder's primary device before completion (allows legitimate holder to abort if alive)
+- Recovery operations MUST emit substrate-holder-visible audit events at every stage (initiation, contact attestation, completion)
+- Substrate-holders SHOULD test recovery annually with low-stakes data to verify the recovery set is still operational
+
+Implementations that omit these mitigations and ship "social recovery" as an unguarded feature are providing a footgun, not a security mechanism.
+
 **Hardware-token replacement:**
 - Pre-generated recovery codes stored offline (printed, in safe deposit box)
 - Lost token → use recovery code to provision a new token
@@ -359,13 +438,20 @@ Implementations MUST use database-level transaction guarantees (PostgreSQL `SERI
 
 When the runtime is horizontally scaled (multiple instances behind a load balancer), the JTI consumption check MUST be globally consistent. Two instances cannot independently mark the same `jti` as consumed for different requests.
 
-**Acceptable consensus models:**
+**Required consensus model (HPI v0 binds):**
 
-- **Centralized consumed-jti store** — all instances read/write to a single Postgres or Redis instance with strong consistency. Simplest model. Single point of failure addressed via replication; replication lag MUST be < expected network latency between agent and runtime.
-- **Distributed consensus** — Raft or Paxos for the consumed-jti log. More complex but eliminates single-point failure.
-- **First-recorded wins** with eventual reconciliation — accept the race; the agent that won the race got the data; the agent that lost gets `token_consumed`. Acceptable only if the audit trail can show both attempts and the substrate-holder can investigate.
+The consumed-jti store MUST satisfy linearizability with respect to consumption operations. Acceptable implementations:
 
-**Unacceptable:** independent consumption tracking per instance with periodic reconciliation. This admits double-consumption windows.
+- **Centralized strong-consistency store** — all instances read/write to a single Postgres (with `SERIALIZABLE` isolation and `SELECT ... FOR UPDATE`) or Redis with `WATCH`/`MULTI`/`EXEC` transactions. Replication lag MUST be < 100ms; replicas SHOULD reject consumption requests during partition.
+- **Raft/Paxos consensus** on the consumed-jti log. RECOMMENDED for high-availability deployments. Specifically: implementations MAY use etcd, Consul, or equivalent battle-tested Raft implementation. Custom consensus protocols are NOT acceptable for v0 — implementations MUST use proven primitives.
+- **First-recorded-wins with audit** — accept the race; the agent that won got the data; the loser receives `token_consumed`. The audit trail MUST show both attempts as distinct events with timestamps. Acceptable only when the substrate-holder is monitoring audit anomalies (per §8.1).
+
+**Unacceptable:**
+- Independent consumption tracking per instance with periodic reconciliation. Admits double-consumption windows.
+- "Best-effort" consensus without explicit failure-mode specification.
+- Custom consensus protocols not derived from Paxos / Raft / Viewstamped Replication families.
+
+**Conformance test (v0.1 suite):** implementations MUST pass a Byzantine-network-partition test demonstrating that no JTI is double-consumed across simulated 5-node cluster with arbitrary network failures, including split-brain scenarios.
 
 ### 7.3. Network-boundary replay
 
@@ -399,6 +485,21 @@ Standard cryptographic engineering; reference implementations MUST pass timing-a
 ## 8. Incident response framework
 
 When an HPI deployment is compromised, the substrate-holder needs a clear runbook. This section defines the standard phases.
+
+### 8.0. Required time-bound SLOs
+
+For v0 conformance, implementations MUST commit to the following time-bound service-level objectives. These are not aspirations — they are detection-and-response binding.
+
+| SLO | Required for v0 conformance | Recommended for high-security |
+|---|---|---|
+| Time-to-detect (anomaly in audit trail surfaces to substrate-holder) | ≤ 24 hours from event | ≤ 5 minutes |
+| Time-to-revoke (substrate-holder revocation propagates to all runtime instances) | ≤ 60 seconds | ≤ 5 seconds |
+| Time-to-publish (revocation list endpoint reflects revocation) | ≤ 60 seconds | ≤ 5 seconds |
+| Time-to-key-rotate (new signing key live + old key flagged for verify-only) | ≤ 1 hour | ≤ 15 minutes |
+| Time-to-incident-disclosure (substrate-holders notified of operator-acknowledged compromise) | ≤ 72 hours (GDPR-aligned) | ≤ 4 hours |
+| Time-to-audit-snapshot (forensic preservation of audit trail begins after detection) | ≤ 1 hour | ≤ 5 minutes |
+
+Implementations failing to commit to these SLOs in published deployment documentation are non-conformant. The SLOs are the cryptographic claims' enforcement timeline; without them, "the substrate-holder can revoke" is prose, not protocol.
 
 ### 8.1. Detection
 

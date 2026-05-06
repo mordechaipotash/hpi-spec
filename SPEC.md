@@ -39,6 +39,21 @@ The pattern is consistent: when value passes through a layer that's owned by a s
 
 The cognitive-substrate layer of 2026 is exactly the next instance of this pattern. **HPI exists because that protocol does not exist yet.**
 
+#### The capture pattern these protocols share — and HPI's response
+
+Each of these open protocols faced the same threat: a well-resourced platform implements technically-compliant endpoints, then routes value through adjacent unaudited mechanisms. SMTP is "open" but Gmail's dominance creates de facto lock-in: email from non-Gmail servers is increasingly flagged as spam. OAuth 2.0 is "open" but Auth0's commercial implementation became the de facto gatekeeper. ActivityPub is "open" but faces parallel embrace-extend-extinguish risk from Threads.
+
+The lesson — articulated sharply by Cory Doctorow in *The Internet Con* and the enshittification framework — is that **open protocols without governance enforcement become captured.** "Anyone can implement this" without anti-capture provisions is an invitation to capture, not a defense against it.
+
+HPI v0's response:
+
+- §7.6 reframes "not anti-platform" as a binding conformance constraint, not advisory recommendation
+- §7.7–§7.12 are FORBIDDEN anti-patterns with MUST NOT clauses — including §7.11 explicitly addressing the SMTP→Gmail capture pattern (no per-substrate-holder service degradation, no opaque scope-default templates, no unauthorized axiom-grammar extension)
+- A governance charter ([`governance/CHARTER.md`](governance/CHARTER.md)) names the canonical-grammar maintainer, audit process, remedy for non-compliance — preventing single-implementor capture of the typed axiom grammar
+- THREAT-MODEL.md §5.9 explicitly addresses AI inference pipeline as exfiltration vector — the AI-specific instance of the capture pattern that's distinct from prior protocol generations
+
+This is HPI's structural defense against becoming "the next OAuth → Auth0." Whether it succeeds depends on enforcement that lives outside the wire format. The wire format names the constraints; the governance body and the regulatory environment must do the work of binding implementors to them.
+
 ### 1.4. What HPI is
 
 HPI is a typed protocol for substrate-boundary context handoff. Specifically:
@@ -431,9 +446,23 @@ Field semantics:
 - `hpi.single_use` — boolean. Default `true`. If `true`, the token is consumed on first use and the HPI runtime refuses further consumption attempts with the same `jti`.
 - `hpi.delegation` — `forbid` (default) | `attenuate` | `re-request`. Controls sub-agent handoff (see §4.8).
 
-#### v0.1 (planned): W3C Verifiable Credential format
+#### v0.1 (planned): W3C Verifiable Credential + selective disclosure
 
 Migration path: tokens become VCs with cryptographic proof chains, allowing third-party audit without contacting the issuer. v0 JWT format is a strict subset of the v0.1 VC envelope — implementations that emit v0 JWTs can be upgraded by re-wrapping in VC structure without changing the issuance or consumption semantics.
+
+**Selective disclosure (Allen-flagged gap):** v0 bearer JWTs do not support cryptographic selective disclosure — the holder cannot present a subset of context claims without re-issuing the token with a re-truncated scope. v0.1 will support:
+
+- **SD-JWT** (Selective Disclosure JWT, IETF draft) as the minimum-disclosure-capable token format. SD-JWT preserves JWT compatibility while enabling claim-level redaction with cryptographic integrity preservation.
+- **BBS+ signatures** for unlinkable selective disclosure where multiple presentations of the same credential should not be correlatable.
+- **Gordian Envelope** (Christopher Allen / Blockchain Commons) as an alternative envelope format with built-in elision (selective disclosure), non-correlation properties, and threshold signature support.
+
+The v0.1 token format choice will be made by the working group (per [`governance/CHARTER.md`](governance/CHARTER.md) Phase 2). v0 JWT remains the baseline; implementations are welcome to ship SD-JWT or BBS+ as additional supported formats during the v0 period.
+
+#### Version negotiation (v0 forward-compatibility)
+
+The token's `hpi.version` field carries the protocol version (`"0"` for v0). Runtimes MUST accept tokens with versions equal to or older than their own implementation. A v0 client interacting with a v1 runtime SHOULD receive a `version_too_old` error with the runtime's minimum-supported version in the response body, allowing the client to negotiate an upgrade.
+
+This addresses the Stenberg-flagged versioning ambiguity. Future versions of HPI MUST preserve forward-compatibility within a major version; semantic-version-style breaking changes require a major-version bump.
 
 ### 4.3. Scope structure
 
@@ -650,6 +679,20 @@ HPI v0 does the first thing well, gestures at the third (audit trail), and defer
 ---
 
 ## 5. Wire Format & Transport
+
+### 5.0. Normative reference to THREAT-MODEL.md
+
+[`THREAT-MODEL.md`](THREAT-MODEL.md) is **normative** for HPI v0 conformance. Implementations claiming HPI v0 conformance MUST honor:
+
+- The §6 key custody patterns (specifically §6.6 forbidden patterns)
+- The §7 cryptographic atomicity requirements (specifically §7.1 JTI consumption transactional semantics)
+- The §8 incident response framework (specifically §8.1 detection requirements + §8.2 containment timelines)
+- The §5.8 data-control-path commingling acknowledgment (operator MUST disclose this limit to substrate-holders)
+- The §5.9 AI-inference-pipeline exfiltration acknowledgment (operator MUST disclose external-inference paths)
+
+A wire-format implementation that satisfies §5 of this document but violates the constraints in THREAT-MODEL.md is NOT HPI v0-conformant. The threat model is not advisory; it is a binding component of the protocol.
+
+This addresses the deployment-tail specification failure pattern: implementations cannot claim HPI compliance by reading §5 alone and skipping the threat model.
 
 ### 5.1. Transport: extending Anthropic MCP
 
@@ -960,29 +1003,66 @@ Implementations may use Web3 primitives (Ceramic, IPFS, ENS, Solid) or pure HTTP
 
 LLMs are extraordinarily useful. HPI's whole point is to enable agents (LLM-powered or otherwise) acting on the user's behalf with appropriate access controls. The constraint is on substrate ownership, not on AI utility. An HPI-compliant LLM-based agent has full access to the human's substrate via tokens; the human retains the ability to revoke that access at any time and audit what the agent did with it.
 
-### 7.6. HPI is NOT anti-platform
+### 7.6. HPI is NOT anti-platform — but conformance is binding, not advisory
 
-A platform CAN be HPI-compliant. Doing so requires:
-- The platform issues tokens against the user's substrate, not the platform's own user-context store
-- The platform emits audit events to the user's substrate, not the platform's logs
-- The platform's encryption keys for storing user data are user-controlled, not platform-controlled
-- The platform's terms of service do NOT claim ownership of accumulated user context
+A platform CAN be HPI-compliant. Doing so REQUIRES (this section's clauses are conformance constraints, not aspirations — implementations that violate them are non-conformant):
 
-A platform that meets these constraints can offer HPI-compliant memory, personalization, and agentic features. The constraint kills certain monetization patterns (selling aggregated user data, training on accumulated context without consent) but doesn't kill the product.
+- The platform MUST issue tokens against the user's substrate, not the platform's own user-context store
+- The platform MUST emit audit events to the user's substrate, not the platform's logs
+- The platform's encryption keys for storing user data MUST be user-controlled, not platform-controlled (per §6.6 of THREAT-MODEL.md)
+- The platform's terms of service MUST NOT claim ownership of accumulated user context
 
-### 7.7. Anti-pattern: hosted runtime with vendor-held keys
+A platform meeting these constraints can offer HPI-compliant memory, personalization, and agentic features. The constraint forecloses certain monetization patterns (selling aggregated user data, training on accumulated context without consent). This is by design.
+
+### 7.7. Anti-pattern: hosted runtime with vendor-held keys (FORBIDDEN)
 
 The most subtle failure mode is a hosted HPI runtime where the runtime provider holds the encryption keys to the substrate. This re-creates platform-memory under the cosmetic appearance of sovereignty: the user appears to own their substrate, but the runtime provider can read it.
 
-HPI v0 forbids this pattern. Hosted runtimes MUST be technically equivalent to self-hosting from a sovereignty standpoint — encryption keys held by the user (HSM, hardware token, password-derived key, key-shard recovery), runtime operating only on encrypted blobs and short-lived in-memory plaintext.
+**HPI v0 forbids this pattern.** Hosted runtimes MUST be technically equivalent to self-hosting from a sovereignty standpoint — encryption keys held by the user (HSM, hardware token, password-derived key, key-shard recovery; see THREAT-MODEL.md §6), runtime operating only on encrypted blobs and short-lived in-memory plaintext. Implementations that hold plaintext signing keys without holder-controlled key encryption are non-conformant and SHOULD be flagged in published HPI conformance test results.
 
-### 7.8. Anti-pattern: mixing axioms across substrate boundaries without re-validation
+### 7.8. Anti-pattern: mixing axioms across substrate boundaries without re-validation (FORBIDDEN)
 
 When axiom-typed L0 entities cross substrate boundaries, the receiving substrate MUST treat them as new L0 entities subject to the receiver's own validation rules. Inheriting trust ("this OBL was validated in Mordechai's substrate, so I'll trust it") is not permitted by default. The receiving substrate's TRU axiom assigns trust to the sender; high-trust senders can have their axioms accepted with lighter validation, but the validation step is not skippable.
 
-### 7.9. Anti-pattern: silent agent persistence
+### 7.9. Anti-pattern: silent agent persistence (FORBIDDEN)
 
 An agent that retains user-derived state across transactions WITHOUT writing audit events to the substrate violates the spec, even if the retention is "innocent" (e.g., conversational context for a follow-up turn). All cross-transaction state MUST be either: (a) explicitly scoped via a long-lived token, with corresponding audit events, or (b) discarded between transactions. There is no third option.
+
+### 7.10. Anti-pattern: routing substrate content through external inference without per-token consent (FORBIDDEN)
+
+A common Class E / Class G failure mode (see THREAT-MODEL.md §5.9): an HPI-compliant agent reads scoped substrate content via a legitimate token, then forwards that content to an external LLM provider for inference. The substrate is sovereign at storage; effectively exfiltrated at inference.
+
+HPI v0 forbids this without explicit per-token, per-provider substrate-holder consent. Specifically:
+
+- Implementations MUST NOT route returned substrate content through any external inference service whose model provider is not named in the token's `audience` (`aud`) field
+- If an external model provider receives substrate content, the token MUST have explicitly authorized that provider as a recipient
+- Implementations MUST emit an audit event with `external_inference_provider` field whenever substrate content crosses to a third-party model
+- Implementations SHOULD support local-only inference modes as a first-class deployment configuration
+
+### 7.11. Anti-pattern: capture via "compatibility" (FORBIDDEN)
+
+A capture pattern documented in protocol history (SMTP→Gmail dominance; OAuth→Auth0 chokepoint; ActivityPub→Threads embrace-extend-extinguish risk): a well-resourced platform implements technically-compliant HPI endpoints, then routes substrate content through adjacent unaudited mechanisms (premium token resolution speeds, side-channel inference pipelines, opaque scope-default templates).
+
+To prevent this, HPI v0 binds the following anti-capture clauses:
+
+- Implementations MUST NOT correlate token-consumption patterns across substrate-holders for any purpose other than per-substrate audit emission
+- Implementations MUST NOT cache returned scopes beyond the transaction's `exp` time in operator-controlled storage
+- Implementations MUST NOT modify or extend the typed axiom grammar (OBL/RCG/TRU/PAT and successor families) except via the published governance process (see [`governance/CHARTER.md`](governance/CHARTER.md))
+- Implementations MUST NOT degrade service quality (latency, reliability, scope resolution accuracy) for substrate-holders using competing or non-aligned HPI runtimes
+- Implementations MUST publish their conformance-test results publicly, with negative test cases (the violations they have closed)
+
+These clauses are *capture-resistance protocol guarantees*. Implementations failing them are non-conformant.
+
+### 7.12. Anti-pattern: coercive scope-grant solicitation (FORBIDDEN)
+
+Per Class G adversary (THREAT-MODEL.md §2): the legitimate operator that conditions service on consent the substrate-holder would refuse if exit were costless.
+
+Implementations MUST NOT:
+- Condition continued substrate access on the substrate-holder accepting broader-than-minimum-necessary token scopes
+- Deny portability of L0 substrate content to substrate-holders who refuse expanded scope grants
+- Implement default scope templates that exceed the per-task minimum-necessary-access principle without explicit justification
+
+This anti-pattern cannot be enforced by the wire format alone. Compliance requires operator practice + external regulatory enforcement (see Appendix A of THREAT-MODEL.md). Implementations claiming HPI compliance MUST publish their default scope templates and minimum-necessary-access analyses for public review.
 
 ---
 
