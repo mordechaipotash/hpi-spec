@@ -143,7 +143,7 @@ Until then, the axioms are draft and the schema must not lock them in concrete (
 
 ## What this changes about the to-do list
 
-[`deliverables/2026-05-01_jeffrey-todo-list.md`](../viter-workspace/deliverables/2026-05-01_jeffrey-todo-list.md) Section F is reframed:
+Section F of the `<client-corp>` CFO's strategic to-do list is reframed:
 
 - **F0 (NEW, prerequisite):** this file lands first.
 - **F1** schema migration (`add_patent_lifecycle.sql`) implements PAT-1..4 in storage; expected-obligations table implements PAT-5; prosecution_recharge_links implements PAT-6.
