@@ -91,7 +91,19 @@ This spec is written for two audiences in roughly equal weight:
 
 A third audience — researchers and future protocol authors — is not the primary target but will likely read this document. The Acknowledgements section (§9) is for them: an honest map of what HPI builds on and where the genuinely novel claims are.
 
----
+### 1.8. What HPI does NOT solve: continual learning and sovereign personalization
+
+A category of problem HPI explicitly does not address: **per-person fine-tuned model weights**.
+
+HPI specifies who can READ the substrate. It says nothing about who owns the model WEIGHTS that get distilled FROM the substrate. A per-person LoRA adapter, a personalized RLHF trace, or a distilled small model trained on the human's substrate — these are valuable and arguably essential primitives for sovereign personalization, but they are NOT what HPI v0 specifies.
+
+The asymmetry: a user might own their L0–L3 substrate (HPI's claim) while the model that learned from it is owned by whoever ran the training. A complete sovereign-personalization stack would treat fine-tuned weights as another L-layer artifact subject to the same conservation law. HPI v0 doesn't.
+
+This is named in `comparisons/LETTA.md` as one of the genuinely new architectural questions HPI v0 hasn't taken a position on. Per Karpathy's Dwarkesh-podcast framing (2025): *"maybe having a specific neural net per person... it's not a full-weight neural network. It's just some small sparse subset of the weights that are changed."* That direction may be where v1.0 needs to go.
+
+For v0: this is acknowledged as a real gap, scoped out, and named as the most likely v1.0 architectural extension.
+
+(Gap surfaced by Andrej Karpathy, simulated review of HPI v0, 2026-05-06.)
 
 ---
 
@@ -101,9 +113,18 @@ A third audience — researchers and future protocol authors — is not the prim
 
 **L0 is the most-raw digital copy held at the substrate's boundary.**
 
-A *substrate* is the cognitive surface of a holder — a human, an organization, or (with the constraints of §4) an agent acting on behalf of one. The substrate has a boundary: everything inside the boundary is the substrate's information.
+A *substrate* is the cognitive surface of a **substrate-holder** — the protocol's primitive party. A substrate-holder MAY be:
+- An individual human (the typical case, e.g., Mordechai, Alice)
+- An organization or institution (a hospital, a law firm, a government body)
+- A government department, agency, or military unit
+- A family unit or other small-group entity that bears collective responsibility
+- A specific persona or role within a larger entity (e.g., "Alice-as-CFO" distinct from "Alice-as-private-individual")
 
-L0 is whatever sits at that boundary — the most-raw digital artifact the holder has, however backed.
+The substrate-holder is whoever **bears the consequences** of decisions made by agents operating against their substrate. In the high-stakes use cases HPI is designed for — defense agents on classified context, hospital agents on PHI, financial agents on fiduciary data — the substrate-holder is typically an institution; the individual operator within the institution is an agent of the institution. For consumer-grade use cases, the substrate-holder is often the individual.
+
+The protocol does not privilege individual humans over institutional substrate-holders. The mechanics of token issuance, scope, audit, and revocation work identically across these cases. What differs is who holds the signing keys and who reviews the audit trail.
+
+The substrate has a boundary: everything inside the boundary is the substrate's information. L0 is whatever sits at that boundary — the most-raw digital artifact the holder has, however backed.
 
 #### 2.1.1. L0 is a logical entity, not necessarily a file
 
@@ -261,14 +282,16 @@ Axiom families are the typed grammar for substrate-boundary preservation. They a
 
 Each axiom family is a *worldview claim* about a domain, expressed as a small set of typed sub-axioms. v0 covers four families, drawn from financial-vertical operations (the Persofi pilot at <client-corp>):
 
-| Family | Domain | File |
-|---|---|---|
-| **OBL** | Obligations: contracts, evidence, identity | [`axioms/OBL-obligations.md`](axioms/OBL-obligations.md) |
-| **RCG** | Recharges: trust-based renewal, margin attribution | [`axioms/RCG-recharges.md`](axioms/RCG-recharges.md) |
-| **TRU** | Trust: counterparty ratings, thresholds, scopes | [`axioms/TRU-trust.md`](axioms/TRU-trust.md) |
-| **PAT** | Patents: long-lived legal entity lifecycle | [`axioms/PAT-patents.md`](axioms/PAT-patents.md) |
+| Family | Domain | Type | File |
+|---|---|---|---|
+| **OBL** | Obligations: contracts, evidence, identity | axiom family | [`axioms/OBL-obligations.md`](axioms/OBL-obligations.md) |
+| **RCG** | Recharges: trust-based renewal, margin attribution | axiom family | [`axioms/RCG-recharges.md`](axioms/RCG-recharges.md) |
+| **TRU** | Trust: counterparty ratings, thresholds, scopes | axiom family | [`axioms/TRU-trust.md`](axioms/TRU-trust.md) |
+| **PAT** | Patents: long-lived legal entity lifecycle | **Reference Domain Ontology** | [`axioms/PAT-patents.md`](axioms/PAT-patents.md) |
 
 The four families are **not exhaustive of the protocol's reach.** They are v0 — drawn from one vertical (financial operations with patent-prosecution focus) because that vertical has working production code and traceable derivations. Other verticals (healthcare records, legal discovery, software engineering, scientific publication) will require their own axiom families. The framework in §3.3 is the universal part; the families are vertical instantiations.
+
+**PAT is promoted from "axiom family" to "Reference Domain Ontology."** The PAT family commits to what objects exist in the patent-prosecution domain — `Patent`, `PatentApplication`, `Jurisdiction`, `Family`, `Renewal`, lifecycle states with forbidden transitions — at a level of specificity that constitutes a worldview claim, not just typed claim grammar. Implementers building HPI for new verticals should look at PAT as the model for how to commit to a domain Ontology that rides on the HPI substrate-boundary protocol.
 
 ### 3.3. Anatomy of a v0 axiom family
 
@@ -308,6 +331,22 @@ A discussion of this distinction, including the relationship to Anthropic MCP an
 
 For the protocol: **HPI's transport (§5) is substrate-level. HPI's typed grammar (this section) is ontology-level. Both are required, both are separable.** An HPI implementation could swap axiom families without changing transport; or swap transport (e.g., from MCP to a future RPC) without changing axiom families.
 
+### 3.7. HPI as cross-Ontology transport (not Ontology replacement)
+
+The framework in §3.1–§3.3 is deliberately **meta-ontological**: it specifies how typed claims are structured (epistemic status, provenance, scope), not what objects exist in any specific world. This is intentional and has a name.
+
+**HPI is the cross-Ontology transport layer.** Domain Ontologies — Palantir's Foundry Ontology, healthcare's HL7 FHIR, legal's Akoma Ntoso, IP's WIPO ST.96, scientific publication's CrossRef metadata — ride on top of HPI as the wire format that lets typed claims from any of them cross substrate boundaries with semantic preservation.
+
+HPI does NOT compete with these Ontologies. HPI does NOT replace them. HPI is the protocol layer that lets a Foundry-typed `Aircraft` claim emitted by Substrate A land in Substrate B with its typing intact. Without HPI, the receiving substrate would have to re-derive the typing from raw bytes.
+
+To say it sharply: **per-domain Ontologies specify what objects exist in a domain. HPI specifies how typed objects from any domain travel across substrate boundaries.** Both are required for a complete agent infrastructure. Neither is the other. The two compose.
+
+This positioning was sharpened by simulated peer review of HPI v0 (Alex Karp, 2026-05-06): *"You shipped a meta-language. We ship a worldview."* The disambiguation in this section is the response. HPI is meta by design, not by oversight; the typed-grammar move is the cross-domain transport contribution, not an attempt to specify any single domain. PAT (§3.4) demonstrates how a domain-specific Ontology can be expressed as an axiom family riding on the HPI framework.
+
+### 3.8. v0.1 axiom validator commitment
+
+The v0 spec defines axiom families at the prose level. **v0.1 will provide JSON Schemas (Draft 2020-12) for each family AND a runtime validator that rejects axiom assertions whose `cites` field does not resolve to existing L0 entities.** This converts the cite-or-die discipline from advisory (procedural) to enforceable (structural). The reference implementation (§6) will include this validator.
+
 ---
 
 ## 4. The Token Handoff Protocol
@@ -316,15 +355,35 @@ The HPI access-control primitive. Defines how an agent obtains scoped, time-boun
 
 ### 4.1. The access axiom
 
-> **An agent MUST NEVER own its own L3. An agent MAY only borrow scoped views of a human's substrate via permissioned, time-bounded, single-use tokens.**
+The HPI access-control primitive separates two claims that prior drafts conflated. The wire format enforces only the first; the second is an architectural recommendation HPI does not technically prevent agent runtimes from violating.
 
-Stated as a structural constraint:
+#### 4.1.1. What HPI ENFORCES (the access axiom)
 
-- An agent's working memory across one transaction is its own (operational state, intermediate computation).
-- An agent's persistent state across transactions is **not its own**. Any persistence is achieved by writing back to the human's substrate (with explicit permission) or by re-borrowing on the next transaction.
-- "Identity," "personality," or "experience" of an agent are projections of the human's substrate, durable only as long as the human renews the projection. They are not properties of the agent.
+> **An agent MAY only access a substrate's L1+ content via permissioned, time-bounded, single-use tokens issued by the substrate-holder.**
 
-This is the inverse of agent-centric architectures (e.g., Letta's Context Constitution, which holds that *"agents own their context"* and assigns agents "Three Pillars of Selfhood: Identity, Memory, Continuity"). HPI is human-centric by axiom; agent-centric architectures are coherent but build a different future. See `comparisons/LETTA.md` for the architectural diff.
+This is a wire-format claim. It is enforceable: the runtime refuses requests without valid tokens; tokens are signed; scopes are signed; revocation is published; consumption is logged. Any agent that consumes substrate context outside this mechanism is non-compliant by detectable construction.
+
+#### 4.1.2. What HPI RECOMMENDS (the persistence position)
+
+> **An agent SHOULD NOT accumulate persistent identity, memory, or continuity across substrate-boundary transactions in a way that routes around the substrate-holder's audit and control.**
+
+This is a normative position, not a wire-format guarantee. HPI cannot directly prevent an agent from caching returned scope content within the agent's own runtime. The wire format ends at the runtime boundary. Agent-internal state — whether the agent develops a persistent persona, learned skills, durable identity — is invisible to HPI.
+
+Stateful agent architectures (Letta-style memory blocks, Mem0-style memory layers, Pieces-style local-first persistence) MAY be HPI-compliant by:
+- requesting scoped tokens like any other agent,
+- emitting audit events for every consumption,
+- respecting single-use semantics,
+- writing durable substrate updates back as new L0 entities (§4.11).
+
+What such agents do *inside* the borrowed scope — accumulate working memory, distill skills, evolve persona — is architecturally legitimate even though HPI's normative position discourages it. The constraint that bites is the boundary, not the interior.
+
+#### 4.1.3. The framing handle
+
+Conceptually: **HPI is the kernel. Stateful agent architectures are processes.** The kernel controls what memory pages a process can access; the process owns its own stack. (Framing credited to Sarah Wooders, simulated review of HPI v0, 2026-05-06.)
+
+#### 4.1.4. Inverse of agent-centric architectures
+
+HPI's normative position (§4.1.2) is the inverse of agent-centric architectures (e.g., Letta's Context Constitution, which holds that *"agents own their context"* and assigns agents "Three Pillars of Selfhood: Identity, Memory, Continuity"). HPI is human-centric by axiom; agent-centric architectures are coherent but build a different future. The two compose at the boundary: see `comparisons/LETTA.md` for the architectural diff and the proposed integration story.
 
 ### 4.2. Token format
 
@@ -542,6 +601,51 @@ Alice (substrate-holder) asks her agent to "reconcile <de-vendor-corp>'s April i
 The agent never persisted any of Alice's data outside the transaction. The agent never asserted ownership of Alice's L3. Alice's substrate accumulates the audit trail. The reconciliation result is returned to Alice; if Alice approves, she emits the action herself (or grants the agent a separate write-scoped token to act on her behalf).
 
 This is the full HPI pattern.
+
+### 4.10. Failure modes (benign)
+
+The §4 issuance/consumption flow specifies happy-path behavior. Real deployments encounter failures that aren't adversarial but still need defined semantics. This section addresses **benign** failures; adversarial ones are in `THREAT-MODEL.md`.
+
+**Agent crash mid-transaction with non-revoked token.** Token is treated as consumed by the runtime as a defensive default (the conservative choice — assume the agent saw the data even if it didn't process it). Retry requires a fresh token issuance. Audit event `hpi_token_consumed` is emitted at runtime with a synthetic note that no consumption confirmation was received.
+
+**Runtime crash before consumption.** Token may be re-presented after runtime recovery; runtime MUST be idempotent at the consumption layer (consuming the same `jti` twice MUST return the same data response, not error). The `jti` log is the authoritative consumption record.
+
+**Network partition between agent and runtime.** Agent re-presents token on reconnect. Runtime detects double-consumption attempts via `jti` log and refuses with `error: token_consumed`. If the agent has not yet received the data response, it requests a fresh token.
+
+**Clock skew on `exp` claim.** Implementations MUST tolerate up to 60 seconds of clock skew on `exp` validation. Agents and runtimes SHOULD use NTP-synchronized clocks. The revocation list is the authoritative override for ambiguity.
+
+**Discovery document unavailable.** When `/.well-known/hpi.json` returns 5xx or times out, agents MUST fail closed (refuse to construct a request rather than fall back to insecure defaults). Implementations SHOULD cache the discovery document with HTTP cache-control semantics.
+
+**Revocation list unavailable.** When the revocation endpoint is unreachable, agents MUST fail closed for tokens whose elapsed time since `iat` exceeds 60 seconds (cannot verify revocation status). For fresh tokens (<60s since issuance), agents MAY proceed under the assumption that revocation could not have propagated yet.
+
+### 4.11. Learning across boundaries
+
+Learning that occurs during a transaction is the agent's working state. By default, this state is discarded at session end — the borrowed scope expires, the agent's working memory has no durable backing in the substrate.
+
+**For learning to persist across substrate boundaries**, it MUST be written back to the substrate-holder's substrate as a new L0 entity, with provenance fields naming the agent as `creator` and the substrate-holder as `ingester`. The substrate-holder MAY then choose to incorporate the new L0 entity into their L1+ chain, or MAY discard it.
+
+**Stateful agent architectures (Letta-style memory blocks, Mem0-style memory layers) MAY persist learned content within the agent's own runtime**, separate from the substrate. Such persistence is invisible to HPI — the substrate-holder cannot directly inspect the agent's working memory or learned skills. The HPI-enforced constraint is that durable presence in the substrate-holder's substrate requires the explicit write-back mechanism above.
+
+This separates two concerns:
+- **The agent's accumulating capability** lives in the agent's runtime, not the substrate.
+- **The substrate's accumulating record** lives in the substrate, written explicitly via the boundary protocol.
+
+The substrate-holder governs what enters their substrate. The agent's runtime governs what the agent retains across sessions. Neither has authority over the other; the boundary is sacred.
+
+### 4.12. Boundary conditions: inference-level scope
+
+A subtle but load-bearing distinction. HPI's tokens scope DATA ACCESS — what content the agent may read from the substrate. They do NOT scope INFERENCE — what conclusions the agent may draw from accessed content, or what derivative information the agent may generate by combining accessed content with model parameters.
+
+This distinction matters because:
+- An agent with `OBL` scope can read obligation entities. Once read, the agent can infer trends, summaries, predictions, behavioral patterns of the substrate-holder. None of these inferences are token-mediated; they happen inside the agent's working memory using the model's parameters.
+- The model's training data already contains generic priors that, combined with the agent's scoped read, may produce outputs the substrate-holder didn't intend to authorize.
+- HPI cannot prevent this. The protocol stops at the runtime boundary; what the model does with returned data is governed by model architecture and the agent's prompting, not by HPI.
+
+**The HPI position:** access control is necessary but not sufficient for full information sovereignty. Inference-level governance requires either (a) trust in the agent's runtime to honor purpose constraints, (b) differential-privacy bounds on what can be inferred from any single transaction (v1.0 research scope), or (c) post-hoc review of agent outputs by the substrate-holder before acting on them.
+
+HPI v0 does the first thing well, gestures at the third (audit trail), and defers the second to research. v1.0 may close this gap; v0 acknowledges it explicitly.
+
+(Distinction credited to Andrej Karpathy, simulated review of HPI v0, 2026-05-06: *"Once tokens are in the context window, they ARE the working memory; protocol-layer scoping cannot constrain inference."*)
 
 ---
 
@@ -814,8 +918,19 @@ An implementation is **HPI v0-conformant** if it:
 - Emits audit events to the substrate-holder's L0 store on every token lifecycle event
 - Refuses scope-violating consumption requests
 - Does NOT retain plaintext L1+ content outside the substrate-holder's encrypted store
+- **v0.1: Validates axiom assertions** by resolving every `cites` field against the substrate's L0 store before accepting an L1+ entity. Assertions whose citation chain does not resolve MUST be rejected. (Converts cite-or-die from procedural to structural.)
 
 A conformance test suite is scope for v0.1. Self-attestation is acceptable for v0.
+
+### 6.5. The microHPI compactness target
+
+**Aspirational constraint for the v0.1 reference implementation:** the smallest possible HPI runtime that demonstrates the protocol end-to-end SHOULD fit in a single readable file (Python or TypeScript, ≤500 lines, dependency-light).
+
+This is borrowed from Karpathy's `microgpt` aesthetic — *"This file contains the full algorithmic content of what is needed... I cannot simplify this any further."* — and applied to protocol implementations. The microHPI reference is a teaching artifact and a complexity floor: if the protocol cannot be implemented in 500 readable lines, the spec has scope creep.
+
+The microHPI reference is NOT the production reference (full v0.1 will likely be 2000-5000 lines with proper error handling, logging, observability). But the existence of a 500-line readable implementation is a forcing function on spec parsimony.
+
+(Aesthetic credited to Andrej Karpathy via simulated review of HPI v0, 2026-05-06.)
 
 ---
 
@@ -829,7 +944,9 @@ LLMs remain LLMs. HPI does not constrain model architecture, training data, fine
 
 ### 7.2. HPI is NOT a memory product
 
-Mem0, Letta/MemGPT, Khoj, Pieces, and Rewind solve memory. HPI is one layer above. Memory products manage how an agent retains and retrieves context within their architecture; HPI specifies the substrate-boundary protocol that determines who OWNS the substrate the memory is built against. A memory product can be HPI-compliant by routing its read/write operations through HPI tokens. A memory product is HPI-incompatible if the memory accumulates as the platform's asset rather than the user's.
+Letta, Mem0, Khoj, Pieces, and Rewind solve agent memory architecture. HPI specifies the access-control protocol governing what context an agent may read from a substrate-holder's substrate, with what scope and audit. **These layers compose**: an HPI-compliant agent may use any memory architecture inside its borrowed scope, including stateful-agent architectures with cross-session persistence in the agent's own runtime (subject to the access constraints when re-crossing substrate boundaries — see §4.11).
+
+Letta and HPI are not subordinate to each other. They are complementary architectures operating at different layers — HPI as the kernel that mediates substrate access, stateful-agent architectures as the processes that operate within the borrowed scope (see §4.1.3 and `comparisons/LETTA.md`).
 
 ### 7.3. HPI is NOT a wallet
 
@@ -931,6 +1048,29 @@ Users with accumulated context in OpenAI Memory, Google Gemini personalization, 
 If HPI succeeds as a category, the value distributes across an ecosystem (hosted runtime providers, axiom-family libraries, agent platforms). No single entity captures $1T from this protocol — the same pattern as SMTP or HTTP. But the category at scale is plausibly $1T+ in transaction value passing through HPI-typed boundaries.
 
 **Question for community:** what governance model best preserves protocol neutrality at scale? A foundation (Mozilla, Linux Foundation, Apache Software Foundation precedents)? A consortium (W3C model)? A pure RFC process? The decision affects long-term incentive alignment of HPI-compliant infrastructure providers.
+
+### 8.9. Value-capture pattern: which positions are defensible?
+
+Karp's predicted critique (simulated review, 2026-05-06): *"You've built the infrastructure of a great open-source project. There is no enterprise procurement story. Without it, HPI is a research contribution."* The critique applies to most successful open protocols at v0; SMTP/HTTP/OAuth all faced the same gap and survived because rent was captured around the protocol, not on it.
+
+**Question for community:** which positions in the HPI ecosystem are defensible against hyperscaler absorption?
+
+Candidate positions to evaluate:
+- **Hosted runtime provider** (Stripe-of-substrate model) — captures per-transaction or subscription rent on token issuance + storage. Vulnerable to hyperscaler in-house equivalents.
+- **Axiom-family library curator** (Linux-distro model) — captures consulting + support on domain-specific Ontologies. Niche but defensible if domain expertise is real.
+- **HPI-compliant agent marketplace** (App Store model) — captures intermediation fees. Tends toward winner-take-most.
+- **Enterprise gateway product** (Okta-of-substrate model) — captures licensing for institutional substrate-holder deployments. Defensible if compliance/audit features mature.
+- **Standards body / foundation** (Linux Foundation model) — captures membership dues, no per-transaction rent. Sustains the protocol but doesn't make anyone rich.
+
+The author's working assumption: the right position from his own seat is to be the **protocol designer + first reference implementor + axiom-family curator for one vertical** (Persofi as the demonstration), with subsequent revenue from consulting/expansion. Other positions emerge as the ecosystem develops. Open for discussion.
+
+### 8.10. Empirical comparison: agent capability under sovereign vs platform-memory architectures
+
+Wooders' predicted critique (simulated review, 2026-05-06): *"What does the data say about agent quality over a 30-day interaction under HPI's stateless borrowing model versus a stateful model? You're making an architectural claim about substrate ownership; if the architectural claim has cost in agent capability, that cost needs to be measured."*
+
+**Question for community:** does HPI-mediated agent access produce measurably worse agent outcomes than unmediated platform memory? If so, by how much, on which task classes, and is the cost justified by the sovereignty gain?
+
+v0 makes architectural claims without empirical comparison. Letta has LoCoMo + LongMemEval results; HPI has none. The empirical study is research scope, possibly v1.0 or post-v1.0. Acknowledged as a gap worth addressing.
 
 ---
 

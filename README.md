@@ -11,11 +11,21 @@
 
 ## What this is
 
-HPI specifies how **AI agents request, receive, and use a human's cognitive context** without owning it.
+HPI specifies how **AI agents request, receive, and use a substrate-holder's cognitive context** under permissioned access control.
 
-The default trajectory of 2026 is: hyperscalers (OpenAI, Google, Anthropic) accumulate user context on their servers, build the L3 cognitive surface there, and lock users in by switching costs. That trajectory is structurally misaligned with user agency.
+The default trajectory of 2026 is: hyperscalers (OpenAI, Google, Anthropic) accumulate user context on their servers, build the L3 cognitive surface there, and lock users in by switching costs. That trajectory is structurally misaligned with substrate-holder agency.
 
-HPI is the architectural alternative: **the human's substrate stays sovereign. Agents are given just-in-time, scoped, revocable permission to act on behalf of the human, with full audit trail.** This is to AI context what self-custody wallets are to crypto, what Solid pods are to social data, what SMTP is to email — a protocol that refuses to capture by design, with rent captured around it.
+**The load-bearing claim, precisely stated:** HPI specifies an access-control protocol — agents access a substrate's L1+ content only via permissioned, time-bounded, single-use tokens issued by the substrate-holder, with full audit trail accruing to the substrate-holder's substrate. This is what the wire format enforces.
+
+HPI does NOT specify what agents do inside the borrowed scope. Stateful-agent architectures (Letta-style memory blocks, Mem0-style memory) compose with HPI cleanly: they request scoped tokens, emit audit events, respect single-use semantics. The protocol is the kernel; stateful agent architectures are the processes.
+
+Analogy: HPI is to AI context what self-custody wallets are to crypto, what Solid pods are to social data, what SMTP is to email — a protocol that refuses to capture by design, with rent captured around it.
+
+## How HPI relates to domain Ontologies
+
+HPI is **the cross-Ontology transport layer**. It is not an Ontology itself. Domain Ontologies — Palantir's Foundry Ontology, healthcare's HL7 FHIR, legal's Akoma Ntoso, financial-vertical Persofi — ride on HPI as the wire format that lets typed claims cross substrate boundaries with semantic preservation. HPI does not compete with these Ontologies; it specifies how their typed claims travel between substrates without losing meaning.
+
+A Foundry-typed `Aircraft` claim in Substrate A lands in Substrate B as a Foundry-typed `Aircraft` claim, not as raw bytes that B has to re-derive types from. HPI is what makes that work. PAT (the patent-prosecution Reference Domain Ontology shipped with v0) demonstrates what a domain Ontology riding on HPI looks like.
 
 ## What HPI is not
 

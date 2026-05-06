@@ -132,3 +132,32 @@ To be confirmed by Mordechai before outreach. Suggested:
 - **Hyperscaler walled-garden timeline.** Estimated 18-30 month window before user lock-in solidifies. Spec needs to ship publicly within Phase 4 timeline (12 weeks from now = ~2026-08).
 - **Persofi material exposure.** Axiom files reference Insperanto, Jeffrey Levine, specific suppliers. Sanitization required before public release. Decision: replace specific names with `<vendor-A>`, `<client-X>` placeholders, or get explicit Insperanto sign-off.
 - **Mordechai bandwidth.** 40-60 hours over 12 weeks must compete with Persofi shipping (revenue) and family obligations. Phase 1 (3 weeks of writing) must happen in early-morning / late-evening blocks.
+
+
+## Spec revisions executed (2026-05-06 afternoon)
+
+After three simulated peer reviews (Karp / Wooders / Karpathy) produced 20 distinct revisions, executed all 19 remaining (Karp #4 / THREAT-MODEL.md was shipped earlier).
+
+| # | Revision | Status |
+|---|---|---|
+| Wooders #1 | Split §4.1 into access axiom + persistence position + kernel-as-handle | DONE |
+| Wooders #6 | Add §4.11 Learning across boundaries | DONE |
+| Wooders #7 | Add §4.10 Failure modes (benign) | DONE |
+| Karpathy #1 | Add §4.12 Boundary conditions (access vs inference) | DONE |
+| Karpathy #2 | Add §1.8 What HPI does NOT solve | DONE |
+| Karp #6 | Substrate-holder primitive in §2.1 | DONE |
+| Karp #1 | Add §3.7 HPI as cross-Ontology transport | DONE |
+| Karp #2 | Promote PAT to Reference Domain Ontology | DONE |
+| Karp #7 | Add §3.8 v0.1 axiom validator commitment | DONE |
+| Karpathy #3 | §6.4 conformance gains v0.1 validator requirement | DONE |
+| Karpathy #4 | Add §6.5 microHPI compactness aesthetic | DONE |
+| Wooders #8 | Reword §7.2 memory-products composable | DONE |
+| Wooders #5 | Add §8.10 empirical comparison question | DONE |
+| Karp #5 | Add §8.9 value-capture pattern question | DONE |
+| Wooders #2 | README access-control as load-bearing claim | DONE |
+| Karp #3 | README How HPI relates to domain Ontologies | DONE |
+| Wooders #3 | comparisons/LETTA.md compositional framing | DONE |
+| Wooders #4 | HPI-as-kernel framing handle | DONE |
+| Karpathy #5 | Anthropomorphic-language sweep (no changes needed) | DONE |
+
+The triple-converged central critique (claims more than enforces) is now structurally addressed via the section 4.1 split plus section 3.7 cross-Ontology framing.

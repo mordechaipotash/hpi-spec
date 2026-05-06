@@ -133,19 +133,36 @@ This composition is the most likely production architecture in 2027-2028: Letta-
 
 ---
 
+## The compositional framing (revised after simulated Wooders review, 2026-05-06)
+
+**HPI is the kernel. Stateful agent architectures (including Letta) are processes.**
+
+The simulated Wooders review of HPI v0 produced this framing as the constructive resolution to the apparent axiom inversion. It is correct and HPI v0 has adopted it (see SPEC §4.1.3).
+
+In this composition:
+- The substrate-holder owns the L0–L3 stack. (HPI's enforced claim.)
+- The agent borrows scoped views via tokens. (HPI's enforced mechanism.)
+- Inside the borrowed scope, the agent uses whatever memory architecture serves the task — memory blocks, raw context windows, RAG, whatever. (Letta's domain.)
+- Across substrate boundaries, the agent's persistent state is governed by the substrate-holder via tokens. (HPI again.)
+- The agent's persistent identity, if any, lives in the agent's own runtime — separate from the substrate it operates on, governed by separate norms. (Letta-territory.)
+
+The Context Constitution's claim that agents have continuity, memory, and identity is **compatible** with this composition. The agent's identity is a property of the agent's runtime, not of the substrate it borrows from. HPI doesn't deny agent identity; it specifies that the substrate is sovereign.
+
+The disagreement between HPI and Letta therefore reduces to a clarification rather than an architectural conflict. Where HPI v0 originally read as denying agent identity, the revised v0 (post-Wooders simulation) makes the boundary explicit: §4.1.1 (the access axiom — what HPI enforces) and §4.1.2 (the persistence position — what HPI recommends but does not enforce).
+
 ## Future interop
 
-Concrete mechanisms to make Letta + HPI compose cleanly:
+Concrete mechanisms to make Letta + HPI compose cleanly in production:
 
 1. **Letta agents speak HPI for sensitive scopes.** When a Letta agent is asked to operate on data tagged sovereign, it requests an HPI token instead of pulling from its own memory. Implementation: Letta's runtime gains a side-effect manager that recognizes sovereignty-tagged operations.
 
-2. **HPI audit events are sourceable.** A Letta agent's persona / skill learnings accrued during HPI-scoped transactions emit corresponding audit events to the human's substrate. The human can review what their data taught the agent.
+2. **HPI audit events are sourceable.** A Letta agent's persona / skill learnings accrued during HPI-scoped transactions emit corresponding audit events to the substrate-holder's substrate. The substrate-holder can review what their data taught the agent.
 
-3. **Token revocation as Letta state-update.** When a human revokes an HPI token, the corresponding Letta-side memory/skill that was learned from that token's data is invalidated. This is a meaningful technical challenge (analogous to the GDPR right-to-be-forgotten in machine learning) but solvable for non-foundation-model parameters.
+3. **Token revocation as Letta state-update.** When a substrate-holder revokes an HPI token, the corresponding Letta-side memory/skill that was learned from that token's data is invalidated. This is a meaningful technical challenge (analogous to the GDPR right-to-be-forgotten in machine learning) but solvable for non-foundation-model parameters.
 
 4. **Cross-architecture audit reconciliation.** A Letta runtime and an HPI runtime can produce a joint audit log: Letta's view ("this is what I did and why I did it") + HPI's view ("here are the tokens I consumed and the substrate-events emitted"). The two should reconcile at every token boundary.
 
-This is a roadmap for 2027-2028 cooperation, not a v0 feature. In v0, HPI is its own protocol; Letta is its own platform; the spec lives alongside Letta's Context Constitution as a complementary architectural document with an inverted center of gravity.
+This is the most likely production architecture in 2027-2028: Letta-style agent personas riding on HPI-style sovereign data borrowing. v0 enables this composition explicitly; v1.0 may formalize it further.
 
 ---
 
