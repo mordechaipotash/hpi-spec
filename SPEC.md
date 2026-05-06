@@ -674,6 +674,8 @@ This distinction matters because:
 
 HPI v0 does the first thing well, gestures at the third (audit trail), and defers the second to research. v1.0 may close this gap; v0 acknowledges it explicitly.
 
+See [`THREAT-MODEL.md`](THREAT-MODEL.md) §5.6 (foundation-model alignment, Russell), §5.8 (data/control commingling, Schneier), and §5.9 (inference-pipeline exfiltration, Doctorow) for adversary-class framing of this limit.
+
 (Distinction credited to Andrej Karpathy, simulated review of HPI v0, 2026-05-06: *"Once tokens are in the context window, they ARE the working memory; protocol-layer scoping cannot constrain inference."*)
 
 ---
