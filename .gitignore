@@ -1,0 +1,6 @@
+.DS_Store
+*.swp
+*.bak
+node_modules/
+__pycache__/
+.pytest_cache/
