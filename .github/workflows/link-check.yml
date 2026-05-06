@@ -1,0 +1,65 @@
+name: link-check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**.md'
+      - '.lycheerc'
+      - '.github/workflows/link-check.yml'
+  pull_request:
+    paths:
+      - '**.md'
+      - '.lycheerc'
+  workflow_dispatch:
+  schedule:
+    # Weekly Mon 06:00 UTC — catches dead external URLs over time
+    - cron: '0 6 * * 1'
+
+jobs:
+  lychee:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore lychee cache
+        uses: actions/cache@v4
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      - name: Run lychee link checker
+        id: lychee
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: >-
+            --cache
+            --max-cache-age 7d
+            --no-progress
+            --exclude-mail
+            --accept 200,206,301,302,304,308,403,429
+            --max-concurrency 8
+            --base .
+            './**/*.md'
+          fail: false
+          output: lychee-report.md
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lychee-report
+          path: lychee-report.md
+
+      - name: Open / update issue if links broken
+        if: env.lychee_exit_code != '0'
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: 'Link check report (${{ github.run_number }})'
+          content-filepath: lychee-report.md
+          labels: link-check, automated

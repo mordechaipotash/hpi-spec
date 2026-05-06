@@ -1,0 +1,67 @@
+name: spec-stats
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'SPEC.md'
+      - 'README.md'
+      - 'STATUS.md'
+      - 'axioms/**'
+      - 'examples/**'
+      - 'comparisons/**'
+      - 'simulations/**'
+  workflow_dispatch:
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Compute spec stats
+        id: stats
+        run: |
+          {
+            echo "## HPI spec — stats snapshot"
+            echo
+            echo "Commit: \`${GITHUB_SHA::8}\` · ${{ github.event.head_commit.message }}"
+            echo
+            echo "### Files"
+            echo
+            echo "| File | Lines | Words |"
+            echo "|---|---:|---:|"
+            for f in README.md SPEC.md STATUS.md $(find axioms examples comparisons simulations -name '*.md' 2>/dev/null | sort); do
+              [[ -f "$f" ]] || continue
+              lines=$(wc -l < "$f" | tr -d ' ')
+              words=$(wc -w < "$f" | tr -d ' ')
+              echo "| \`$f\` | $lines | $words |"
+            done
+            echo
+            echo "### SPEC.md sections"
+            echo
+            echo "| Section | Word count |"
+            echo "|---|---:|"
+            awk '
+              /^## [0-9]/ {
+                if (sec) printf "| %s | %d |\n", sec, words
+                sec = $0; words = 0; next
+              }
+              { words += NF }
+              END { if (sec) printf "| %s | %d |\n", sec, words }
+            ' SPEC.md
+            echo
+            total_lines=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+            total_words=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' | xargs wc -w 2>/dev/null | tail -1 | awk '{print $1}')
+            echo "**Repo total:** $total_lines lines, $total_words words across $(find . -name '*.md' -not -path './.git/*' | wc -l | tr -d ' ') markdown files."
+          } > stats.md
+
+      - name: Upload stats artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: spec-stats
+          path: stats.md
+
+      - name: Print to job summary
+        run: cat stats.md >> $GITHUB_STEP_SUMMARY
