@@ -69,11 +69,11 @@ class FilesystemL0BlobStore(L0BlobStore):
 
     def put(self, entity: L0Entity, content: bytes | None = None) -> str:
         if content is not None:
+            # Store content under both entity_id (for direct retrieval) and
+            # content_hash (for dedup / content-addressing).
             content_hash = hashlib.sha256(content).hexdigest()
-            content_path = self.root / "content" / content_hash
-            content_path.write_bytes(content)
-            # Note: we don't mutate the entity here — caller should set backing
-            # to point at content_hash. v0.1 will introduce an explicit helper.
+            (self.root / "content" / content_hash).write_bytes(content)
+            (self.root / "content" / entity.id).write_bytes(content)
 
         entity_path = self.root / "entities" / f"{entity.id}.json"
         entity_path.write_text(_serialize_entity(entity))
@@ -86,16 +86,22 @@ class FilesystemL0BlobStore(L0BlobStore):
         return _deserialize_entity(entity_path.read_text())
 
     def get_content(self, entity_id: str) -> bytes:
+        # Prefer entity-id-keyed content (the canonical store path)
+        direct_path = self.root / "content" / entity_id
+        if direct_path.exists():
+            return direct_path.read_bytes()
+
+        # Fall back to backing-path lookup (for entities that don't store content here)
         entity = self.get(entity_id)
         for backing in entity.backing:
             if backing.kind == "local":
-                # If path is content-hash style, read from content/
                 content_path = self.root / "content" / backing.path  # type: ignore[union-attr]
                 if content_path.exists():
                     return content_path.read_bytes()
-                # Otherwise treat as direct path
-                return Path(backing.path).read_bytes()  # type: ignore[union-attr]
-        raise ValueError(f"entity {entity_id} has no local backing")
+                resolved = Path(backing.path)  # type: ignore[union-attr]
+                if resolved.is_absolute() and resolved.exists():
+                    return resolved.read_bytes()
+        raise ValueError(f"entity {entity_id} has no resolvable content")
 
     def iter_entities(self, type_filter: str | None = None) -> Iterator[L0Entity]:
         for entity_path in (self.root / "entities").glob("*.json"):
@@ -110,8 +116,8 @@ class FilesystemL0BlobStore(L0BlobStore):
 class L1TypedStore(ABC):
     """Storage for typed entities at L1 and above.
 
-    Sketched only — production should use Postgres+JSONB with RLS, sqlite,
-    MotherDuck, or IPLD. This stub just shows the interface.
+    Production should use Postgres+JSONB with RLS, sqlite, MotherDuck, or IPLD.
+    The InMemoryL1TypedStore below is the reference for tests and demos.
     """
 
     @abstractmethod
@@ -129,6 +135,39 @@ class L1TypedStore(ABC):
         valid_at: datetime | None = None,
     ) -> Iterator[AxiomEntity]:
         ...
+
+
+class InMemoryL1TypedStore(L1TypedStore):
+    """Reference in-memory implementation for tests + smoke runs.
+
+    Stores axioms in a dict by id. Production implementations use Postgres+JSONB
+    with RLS scoped to substrate-holder identity.
+    """
+
+    def __init__(self) -> None:
+        self._axioms: dict[str, AxiomEntity] = {}
+
+    def put_axiom(self, axiom: AxiomEntity) -> str:
+        self._axioms[axiom.axiom_id] = axiom
+        return axiom.axiom_id
+
+    def get_axiom(self, axiom_id: str) -> AxiomEntity:
+        if axiom_id not in self._axioms:
+            raise KeyError(axiom_id)
+        return self._axioms[axiom_id]
+
+    def query_axioms(
+        self,
+        family: str | None = None,
+        valid_at: datetime | None = None,
+    ) -> Iterator[AxiomEntity]:
+        for axiom in self._axioms.values():
+            if family is not None and axiom.family.value != family:
+                continue
+            if valid_at is not None and axiom.valid_until is not None:
+                if axiom.valid_until < valid_at:
+                    continue
+            yield axiom
 
 
 # ─── Serialization helpers (v0 — JSON; v0.1 should use msgpack or canonical JSON) ───

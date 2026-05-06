@@ -83,7 +83,46 @@ def query_audit(
 ) -> list[AuditEvent]:
     """Query the substrate-holder's own audit log.
 
-    Stub — v0.1 should support efficient indexed queries. v0 just iterates L0.
+    v0 reference impl: linear scan over L0 with in-memory filtering.
+    v0.1 production: indexed query (e.g., Postgres GIN on event_type + jsonb fields).
     """
-    # TODO: implement filter logic over store.iter_entities(type_filter=...)
-    raise NotImplementedError("query_audit is sketched; v0.1 implementation needed")
+    import json as _json
+
+    type_values = {t.value for t in event_types} if event_types else None
+
+    results: list[AuditEvent] = []
+    for entity in store.iter_entities():
+        if not entity.type.startswith("hpi_token_"):
+            continue
+        if type_values is not None and entity.type not in type_values:
+            continue
+
+        try:
+            content = store.get_content(entity.id)
+            payload = _json.loads(content.decode("utf-8"))
+        except (KeyError, ValueError, UnicodeDecodeError):
+            continue
+
+        ts = datetime.fromisoformat(payload["timestamp"])
+        if since is not None and ts < since:
+            continue
+
+        fields = payload.get("fields", {})
+        if agent_did is not None and fields.get("agent_did") != agent_did:
+            continue
+        if purpose is not None and fields.get("purpose") != purpose:
+            continue
+
+        results.append(
+            AuditEvent(
+                id=payload["id"],
+                type=AuditEventType(payload["type"]),
+                timestamp=ts,
+                fields=fields,
+            )
+        )
+        if len(results) >= limit:
+            break
+
+    results.sort(key=lambda e: e.timestamp)
+    return results

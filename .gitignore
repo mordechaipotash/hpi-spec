@@ -5,3 +5,9 @@ node_modules/
 __pycache__/
 .pytest_cache/
 .obsidian/
+
+# Python venv + caches
+reference-impl/python/.venv/
+reference-impl/python/**/__pycache__/
+reference-impl/python/**/*.egg-info/
+.pytest_cache/

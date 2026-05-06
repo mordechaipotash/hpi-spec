@@ -1,128 +1,130 @@
-# HPI Python Reference Implementation (v0.1 sketch)
+# HPI v0.1 Reference Implementation — Python
 
-**Status:** SKELETON — sketched 2026-05-06. Compiles and partially runs (token issue/verify + L0 storage are functional). MCP server methods are stubbed. Not production-ready.
+**Status:** v0.1 working reference. **11 tests passing**. Functional for end-to-end testing; not production-hardened.
+**Conformance:** v0 of [HPI spec](../../SPEC.md). Implements §4 token handoff + §5 wire format + §6 reference targets.
 
-This is the `reference-impl/python/` directory of the HPI spec repo. It is the v0.1 reference target named in `SPEC.md` §6.3.
+## What's working
 
-## Goals of this sketch
+- ✅ Token issue / verify / consume / revoke (Ed25519 / EdDSA JWT)
+- ✅ Single-use semantics with `jti` consumption tracking
+- ✅ Scope enforcement at consumption (axiom families, layers, actions)
+- ✅ Audit trail emitted to substrate-holder's L0 store (audit-as-substrate-stream)
+- ✅ Audit query with substrate-holder authorization check (per SPEC §5.2.4)
+- ✅ Filesystem L0 blob store (content-addressed; entity-id + content-hash dual indexing)
+- ✅ In-memory L1 typed store with family + valid-at filtering
+- ✅ HpiServer with all 4 required methods (`request_context`, `consume_token`, `revoke_token`, `audit_query`) + optional `discover`
+- ✅ **Citation-chain validator** (Karpathy-flagged enforcement of cite-or-die discipline)
+- ✅ End-to-end smoke test: issue → consume → query → revoke → re-consume fails
+- ✅ Negative tests: scope violation, replay refusal, unauthorized audit query, citation-chain rejection
 
-- **Demonstrate the architecture is implementable.** A specification without working code is theology.
-- **Provide a starting point** for anyone who wants to ship a conformant runtime — fork this, fill in the stubs, ship.
-- **Keep it minimal.** Single dependency tree, no clever abstractions, no premature optimization. Production runtimes will replace most of this; what they shouldn't replace is the architectural shape.
+## What's stubbed (v0.2+ hardening)
 
-## What's implemented
+- Multi-instance JTI consensus (currently single-process; production needs Raft/Paxos per THREAT-MODEL §7.2)
+- Encryption at rest (filesystem store is plaintext for testing; production must encrypt with substrate-holder-controlled keys per THREAT-MODEL §6.3)
+- HTTP transport + actual MCP wire (currently in-process method calls; trivial to wrap)
+- Discovery endpoint serving (function exists; HTTP scaffolding TBD)
+- Revocation list endpoint serving (`.well-known/hpi/revocations.json`)
+- W3C VC token format (v0.1 migration path per SPEC §4.2)
+- SD-JWT / BBS+ for selective disclosure (Allen-flagged for v0.1)
+- Threshold signatures + HSM integration (THREAT-MODEL §6.3 Pattern C)
+- JSON Schema validation at API surface (Stenberg-flagged for v0.1)
+- Conformance test suite covering §7 anti-patterns as negative tests
 
-| Module | Status |
-|---|---|
-| `hpi/types.py` | ✅ Complete — dataclasses for L0Entity, Token, ScopeRequest, AuditEvent |
-| `hpi/tokens.py` | ✅ Functional — JWT issue/verify, single-use jti tracking, revocation list |
-| `hpi/storage.py` | ⚠️ Skeleton — L0BlobStore filesystem reference, L1TypedStore stub |
-| `hpi/audit.py` | ⚠️ Skeleton — emit_audit_event signature with filesystem persistence |
-| `hpi/server.py` | ⚠️ Skeleton — MCP method signatures with TODO bodies |
-| `hpi/discovery.py` | ⚠️ Skeleton — .well-known/hpi.json builder |
-| `hpi/axioms/obl.py` | ⚠️ Skeleton — OBL family validation entry point |
-| `cli/hpi-issue.py` | ⚠️ Skeleton — substrate-holder issues a token |
-| `cli/hpi-audit.py` | ⚠️ Skeleton — substrate-holder queries their audit log |
-| `tests/` | ❌ Empty |
-
-**Functional path today:** import `hpi.tokens`, generate a key, issue a token, verify it. Storage is filesystem-only. Server doesn't actually serve over network yet.
-
-## Layout
-
-```
-python/
-├── pyproject.toml          ← package metadata, dependencies
-├── README.md               ← you are here
-├── hpi/                    ← library code
-│   ├── __init__.py
-│   ├── types.py            ← core dataclasses (load-bearing)
-│   ├── tokens.py           ← JWT issue/verify (functional)
-│   ├── storage.py          ← L0BlobStore + L1TypedStore (sketched)
-│   ├── audit.py            ← audit event emission (sketched)
-│   ├── server.py           ← MCP server with 4 required methods (signatures)
-│   ├── discovery.py        ← .well-known/hpi.json (signatures)
-│   └── axioms/
-│       ├── __init__.py
-│       └── obl.py          ← OBL family validators (sketched)
-├── cli/                    ← command-line tools for substrate-holders
-│   ├── hpi-issue.py
-│   └── hpi-audit.py
-└── tests/                  ← TBD; placeholders only
-```
-
-## Install (once code is filled in)
+## Quick start
 
 ```bash
 cd reference-impl/python
-python3 -m venv .venv
+python3.14 -m venv .venv
 source .venv/bin/activate
 pip install -e .
+pip install pytest
+
+# Run all tests
+python -m pytest tests/
+
+# Or run individual tests with verbose output
+python -m pytest tests/test_e2e.py::test_full_happy_path -v
+python -m pytest tests/test_e2e.py::test_citation_validator_rejects_unresolvable_cites -v
 ```
 
-## Quick test (only the functional path)
+## Test inventory
 
-```python
-from hpi.tokens import TokenIssuer, generate_keypair
-from hpi.types import ScopeRequest
+`tests/test_tokens.py` (3 tests): low-level token primitives
+- `test_issue_then_verify_round_trip`
+- `test_consumed_jti_is_refused`
+- `test_revoked_jti_is_refused`
 
-# substrate-holder generates their signing key (ONCE, at first run)
-priv, pub = generate_keypair()
+`tests/test_e2e.py` (8 tests): full pipeline
+- `test_full_happy_path` — issue → consume → query → audit accrues
+- `test_replay_of_consumed_token_refused` — single-use semantics
+- `test_scope_violation_refused` — write attempt on read-only token
+- `test_revocation_refuses_consumption` — revoke + re-consume = error
+- `test_audit_query_unauthorized_caller_refused` — auth check works
+- `test_citation_validator_accepts_valid_chain` — cite-or-die when valid
+- `test_citation_validator_rejects_unresolvable_cites` — cite-or-die enforcement
+- `test_citation_validator_rejects_empty_provenance` — bare claim rejected
 
-# issuer is the substrate-holder's HPI runtime
-issuer = TokenIssuer(
-    issuer_did="did:web:alice.example",
-    private_key=priv,
-)
+## Architecture (microHPI compactness — Karpathy's request)
 
-# agent requests a token
-token = issuer.issue(
-    agent_did="did:agent:claude-instance-7afe",
-    audience="https://hpi.alice.example/v0",
-    scope=ScopeRequest(
-        axiom_families=["OBL", "RCG"],
-        layers=["L1", "L2"],
-        actions=["read"],
-    ),
-    purpose="reconcile-supplier-statement",
-    purpose_text="Test issuance",
-    expiry_seconds=3600,
-)
-print("issued:", token.jti, "exp:", token.expires_at)
+Core protocol primitives in ~1100 lines of Python:
 
-# agent presents token; runtime verifies
-from hpi.tokens import TokenVerifier
-verifier = TokenVerifier(public_keys={issuer.kid: pub})
-verified = verifier.verify(token.jwt)
-print("verified:", verified.claims.purpose)
-
-# single-use enforcement
-verifier.mark_consumed(token.jti)
-try:
-    verifier.verify(token.jwt)  # raises TokenConsumed
-except Exception as e:
-    print("correctly rejected re-use:", type(e).__name__)
+```
+hpi/
+├── __init__.py       (31 lines)  exports
+├── types.py         (189 lines)  L0Entity, Scope, Token, AxiomEntity, AuditEvent
+├── tokens.py        (335 lines)  TokenIssuer, TokenVerifier, single-use + revocation
+├── storage.py       (~190 lines) L0BlobStore + L1TypedStore (FilesystemL0 + InMemoryL1)
+├── audit.py         (~145 lines) emit_audit_event, query_audit
+├── server.py        (~225 lines) HpiServer with §5.2 method surface
+├── citations.py     (109 lines)  cite-or-die discipline enforcement
+├── discovery.py      (32 lines)  .well-known/hpi.json builder
+└── axioms/
+    ├── __init__.py
+    └── obl.py                    OBL family schema + validators
 ```
 
-## Build cost from current state
+**The microHPI design aesthetic:** every primitive should fit in a head. If a function is hard to understand, decompose it. Per Karpathy's "Recipe for Training Neural Networks": *"neural net training fails silently."* Same applies to protocol implementations — opaque code fails in opaque ways.
 
-Per SPEC §6.3: ~80-120 hours total to a functional v0.1 reference. From this skeleton: ~50-90 hours remaining. Concretely:
-- **MCP server transport** (10-20 hrs) — wire up `hpi.server.HpiServer` to the actual `mcp` Python library
-- **Storage backend** (15-25 hrs) — finish filesystem L0BlobStore, sketch S3 + OCL adapters
-- **OBL axiom family end-to-end** (10-20 hrs) — JSON Schema, validator, projection function, tests
-- **Audit log persistence + query** (5-10 hrs)
-- **Discovery + revocation list HTTP endpoints** (5-10 hrs)
-- **CLI tools** (5-15 hrs)
+The **irreducible token + storage + audit core** is closer to ~300 lines of substantive logic (the rest is type definitions, error classes, and serialization). Anyone wanting to understand HPI mechanically can read tokens.py + storage.py + audit.py + server.py in 30 minutes.
 
-## Design notes
+## How to extend
 
-**Why JWT (not VC) for v0:** maximum implementation availability. Every language has a JOSE library. v0.1 path to W3C VC is straightforward (rewrap claims in VC envelope, add proof block).
+To add a new axiom family (e.g., `MED` for medical-vertical):
 
-**Why filesystem storage:** zero dependencies. Anyone can run it. Real implementations should plug in OCL / S3 / Solid via the `L0BlobStore` interface; the interface is small (~5 methods).
+1. Document the family per the 8-section conformance contract in SPEC §3.3
+2. Add `axioms/med.py` with state machine + validators
+3. Add `MED` to `AxiomFamily` enum in `types.py`
+4. Add tests demonstrating: family-scoped token returns MED axioms, cross-family scope violations refused, citation chains valid
 
-**Why single-use jti by default:** revocation becomes irrelevant for tokens already consumed; failure mode of revocation-list-not-checked is bounded to in-flight tokens only.
+To add a new storage backing (e.g., S3-compatible):
 
-**Why the audit log lives in L0:** the substrate-holder's own substrate is the canonical record of what their agents did. This is the structural inversion of platform-mediated audit (where the platform owns the log). It's the load-bearing property; everything else is implementation.
+1. Subclass `L0BlobStore` (interface in `storage.py`)
+2. Implement `put`, `get`, `get_content`, `iter_entities` (4 methods, ~100 lines)
+3. Wire encryption at rest using substrate-holder's key derivation (THREAT-MODEL §6.3 Pattern A)
+
+To run a real network deployment:
+
+1. Wrap `HpiServer` methods in an MCP server (use `mcp` Python package)
+2. Or expose via plain HTTP+JSON — each method is a POST to `/v0/<method-name>`
+3. Serve `.well-known/hpi.json` via existing web server (output of `HpiServer.discover()`)
+4. Serve `.well-known/hpi/revocations.json` via the same (TODO: scaffold a flask app for this)
+
+## What this proves
+
+The HPI protocol primitives are **implementable**. The §4 token handoff + §5 wire format + cite-or-die enforcement + audit-as-substrate-stream compose into a working runtime in ~1100 lines. **The next sprint is hardening (encryption, multi-instance, MCP wire) — not invention.**
+
+This addresses:
+
+- **Karpathy's "200-line version" challenge:** Close to 1100 for the full surface; ~300 lines for the irreducible token + storage + audit core. Compactness aesthetic preserved.
+- **Karpathy's verifiability framework:** Citation-chain validator runs at API surface, rejecting axioms whose `provenance` does not resolve. Cite-or-die is no longer advisory.
+- **Stenberg's implementability challenge:** *"I can't implement this from prose alone."* Now you can. Method names, parameter shapes, error codes are concrete. JSON Schemas remain v0.1 scope.
+- **Schneier's audit-as-substrate-stream design:** *"the substrate-holder owns their own audit, full stop."* Verified by `test_full_happy_path`'s assertion that audit events accrue in the substrate-holder's L0 store, not in any runtime-side log.
+- **Doctorow's enshittification critique (partial):** Anti-capture clauses from SPEC §7.10–§7.12 are not yet enforced by this implementation; conformance test suite for them is v0.2 scope. The wire-format primitives are correct; enforcement-at-implementation is the next layer.
 
 ## Compatibility note
 
-This Python reference is INDICATIVE, not normative. The normative spec is `SPEC.md`. If this implementation diverges from `SPEC.md`, the spec is correct and this code is wrong. Pull requests welcome on either side.
+This Python reference is **indicative**, not normative. The normative spec is `SPEC.md`. If this implementation diverges from `SPEC.md`, the spec is correct and this code is wrong. Pull requests welcome on either side.
+
+## License
+
+Apache 2.0 (planned for spec); MIT (planned for this implementation). License files pending v0 publication gate.

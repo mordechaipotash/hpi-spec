@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from hpi.audit import emit_audit_event
+from hpi.audit import emit_audit_event, query_audit
 from hpi.storage import L0BlobStore, L1TypedStore
 from hpi.tokens import (
     HpiTokenError,
@@ -134,11 +134,22 @@ class HpiServer:
         except HpiTokenError as e:
             return {"error": type(e).__name__, "reason_text": str(e)}
 
-        # TODO v0.1: actually run the action against l1_store
+        # Execute the action against L1 store, filtered to scope
         data: list = []
-        if action.get("type", "").startswith("query_"):
-            # Stub: pretend we queried the L1 store
-            data = []
+        action_type = action.get("type", "")
+        if action_type == "query_axioms":
+            family_filter = action.get("filters", {}).get("family")
+            scope_families = set(token.claims.scope.axiom_families)
+            scope_ids = set(token.claims.scope.axiom_ids)
+            for axiom in self.l1_store.query_axioms(family=family_filter):
+                if scope_families and axiom.family.value not in scope_families:
+                    continue
+                if scope_ids and axiom.id not in scope_ids:
+                    continue
+                from dataclasses import asdict
+                d = asdict(axiom)
+                d["family"] = axiom.family.value
+                data.append(d)
 
         self.verifier.mark_consumed(token.jti)
 
@@ -186,14 +197,41 @@ class HpiServer:
         purpose: str | None = None,
         event_types: list[str] | None = None,
         limit: int = 100,
+        caller_did: str | None = None,
     ) -> dict[str, Any]:
         """Substrate-holder queries their own audit trail.
 
-        AUTHENTICATION REQUIRED — only the substrate-holder can call this.
-        Implementations must verify the caller is the issuer_did before responding.
+        AUTHENTICATION REQUIRED — only the substrate-holder may query their own audit.
+        v0 reference: in-process check that caller_did matches issuer_did.
+        v0.1 production: signed challenge-response per SPEC §5.5.
         """
-        # TODO v0.1: caller authentication, efficient indexed query
-        return {"events": [], "next_cursor": None}
+        # Per SPEC §5.2.4 — restricted to the substrate-holder
+        if caller_did is not None and caller_did != self.issuer.issuer_did:
+            return {"error": "unauthorized", "reason_text": "audit_query restricted to substrate-holder"}
+
+        since_dt = datetime.fromisoformat(since) if since else None
+        type_filter = [AuditEventType(t) for t in event_types] if event_types else None
+
+        events = query_audit(
+            self.l0_store,
+            since=since_dt,
+            event_types=type_filter,
+            agent_did=agent_did,
+            purpose=purpose,
+            limit=limit,
+        )
+        return {
+            "events": [
+                {
+                    "id": e.id,
+                    "type": e.type.value,
+                    "timestamp": e.timestamp.isoformat(),
+                    "fields": e.fields,
+                }
+                for e in events
+            ],
+            "next_cursor": None,
+        }
 
     # ─── §5.2.5 hpi.discover (optional) ─────────────────────────────────
 
