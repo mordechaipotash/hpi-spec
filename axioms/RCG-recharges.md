@@ -4,7 +4,7 @@
 
 A recharge is **a first-class entity**, not a flag on an invoice. It's a derivative obligation that re-routes economic substance through an intermediary — and *the profit calculation derives from it*. Treating recharge as a flag means profit numbers will silently drift from reality every time recharge logic changes. Treating it as an entity means profit is a typed derivation that can be audited, replayed, and disagreed with explicitly.
 
-This is the axiom Jeffrey was naming on 2026-04-19 morning when he wrote the 14-section Persofi Flow memo: *"If recharge is not accounted for, profit is not real."* That sentence is ontological, not procedural. It means: in your worldview, profit *cannot exist* unless the recharge graph has been resolved.
+This is the axiom <the CFO> was naming on 2026-04-19 morning when he wrote the 14-section Persofi Flow memo: *"If recharge is not accounted for, profit is not real."* That sentence is ontological, not procedural. It means: in your worldview, profit *cannot exist* unless the recharge graph has been resolved.
 
 ## Core axiom
 
@@ -12,7 +12,7 @@ This is the axiom Jeffrey was naming on 2026-04-19 morning when he wrote the 14-
 
 ## Sub-axioms
 
-> **RCG-2 (draft):** Margin = downstream.amount − upstream.amount, in the *book* currency (Insperanto's), computed at FX rates frozen per OBL-5 on each leg independently. Margin can be negative (loss), zero (pass-through at cost), or positive (markup). Sign and magnitude are *typed properties* of the recharge, not derived after the fact.
+> **RCG-2 (draft):** Margin = downstream.amount − upstream.amount, in the *book* currency (<client-corp>'s), computed at FX rates frozen per OBL-5 on each leg independently. Margin can be negative (loss), zero (pass-through at cost), or positive (markup). Sign and magnitude are *typed properties* of the recharge, not derived after the fact.
 
 > **RCG-3 (draft):** A recharge is *complete* iff both legs are in `settled` or `cancelled` (in matching terminal states). An incomplete recharge has *indeterminate margin*; profit calculations that include it must carry an explicit `provisional` tag in the L2 with the unresolved leg cited.
 
@@ -25,8 +25,8 @@ This is the axiom Jeffrey was naming on 2026-04-19 morning when he wrote the 14-
 ## What this axiom buys you
 
 - **Profit honesty.** Recharge-aware profit numbers cannot drift silently because every recharge is a node and every margin is a typed property; recompute is deterministic.
-- **Provisional flagging.** When Jeffrey asks *"what's profit on Job 4172?"* and one leg of a 2-leg recharge is unsettled, the answer comes back *with* the `provisional` tag and a pointer to the unsettled obligation. No false confidence.
-- **Insperanto-specific patent prosecution recharge pattern is encodable** — the firm bills the client, the firm pays the agent in the foreign jurisdiction, the firm extracts a margin that's the value of the prosecution coordination. RCG-2 captures it natively.
+- **Provisional flagging.** When <the CFO> asks *"what's profit on Job 4172?"* and one leg of a 2-leg recharge is unsettled, the answer comes back *with* the `provisional` tag and a pointer to the unsettled obligation. No false confidence.
+- **<client-corp>-specific patent prosecution recharge pattern is encodable** — the firm bills the client, the firm pays the agent in the foreign jurisdiction, the firm extracts a margin that's the value of the prosecution coordination. RCG-2 captures it natively.
 - **Audit chain.** Every profit number in an L2 cites the recharge nodes that derived it; an auditor can re-walk the graph and arrive at the same number or find the discrepancy.
 
 ## L2 projection rule (worked)

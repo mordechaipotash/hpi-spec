@@ -13,12 +13,12 @@ A schema says *what is*. An ontology says *how things relate, what's allowed, wh
 **v0 (2026-04-30) — financial-vertical foundation:**
 
 1. [`01-obligations.md`](01-obligations.md) — what an invoice/bill/receivable actually IS, abstracted from its source representation
-2. [`02-recharges.md`](02-recharges.md) — recharge as first-class, with profit-attribution rules. *"If recharge is not accounted for, profit is not real."* — Jeffrey, 2026-04-19
+2. [`02-recharges.md`](02-recharges.md) — recharge as first-class, with profit-attribution rules. *"If recharge is not accounted for, profit is not real."* — <the CFO>, 2026-04-19
 3. [`03-trust.md`](03-trust.md) — supplier trust, variance explanation, auto-action thresholds — encoded so the system reasons about *qualitative difference* between counterparties, not just foreign keys.
 
 **v0.1 (2026-05-01) — patent vertical extension:**
 
-4. [`05-patents.md`](05-patents.md) — patent as first-class node that *generates* obligations rather than being described by them. PAT-* axioms encoding lifecycle, jurisdictional fan-out, ownership-as-typed-relation, and renewal-as-expected-obligation. Drafted in response to Jeffrey's 2026-05-01 strategic update naming patent-lifecycle insights as the path to direct-to-corporate distribution.
+4. [`05-patents.md`](05-patents.md) — patent as first-class node that *generates* obligations rather than being described by them. PAT-* axioms encoding lifecycle, jurisdictional fan-out, ownership-as-typed-relation, and renewal-as-expected-obligation. Drafted in response to <the CFO>'s 2026-05-01 strategic update naming patent-lifecycle insights as the path to direct-to-corporate distribution.
 
 ## Worked example
 
@@ -33,13 +33,13 @@ A schema says *what is*. An ontology says *how things relate, what's allowed, wh
 The universal axioms above apply across any financial-vertical deployment. The folders below are **scoped instantiations** — per Shaul's 2026-05-03 00:25 IDT directive that *"every company has to be represented ... Viter has one, Persefy has one."*
 
 - [`viter/`](viter/) — the platform-org
-- [`persofi/`](persofi/) — the financial-vertical product pack (Jeffrey distribution; the "patent is a job" instantiation)
-- [`clients/insperanto/`](clients/insperanto/) — Persofi's first pilot client (Jeffrey's CFO employer)
+- [`persofi/`](persofi/) — the financial-vertical product pack (<the CFO> distribution; the "patent is a job" instantiation)
+- [`clients/<client-corp>/`](clients/<client-corp>/) — Persofi's first pilot client (<the CFO>'s CFO employer)
 
 ## Status
 
 - v0 written 2026-04-30 in response to the Apr 29 Thiel/Palantir critique that the stack lacks an ontology layer (the deepest cut — see [chat-log/by-day/2026-04-29-L1.md:3112](../chat-log/by-day/2026-04-29-L1.md)).
-- v0.1 added 2026-05-01 — `05-patents.md` PAT-* family, drafted from Jeffrey's strategic memo same morning. Schema work on patents is forbidden until PAT-* is promoted from draft.
+- v0.1 added 2026-05-01 — `05-patents.md` PAT-* family, drafted from <the CFO>'s strategic memo same morning. Schema work on patents is forbidden until PAT-* is promoted from draft.
 - Numbers, thresholds, and template counts are placeholders — the *shapes* of the axioms are the load-bearing claim, not the constants.
 - Yitzhak's "17 axiom templates" framing (Apr 30 IKEA pitch) is the right shape but generic — these axiom families plus their derivations are the financial-vertical-specific instantiation.
 

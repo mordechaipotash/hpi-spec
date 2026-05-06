@@ -60,7 +60,7 @@ HPI builds explicitly on:
 ## Status as of 2026-05-06
 
 - ✅ Substrate model (L0–L3) articulated since 2024-04, formalized in this spec
-- ✅ Axiom grammar v0: 4 families (OBL, RCG, TRU, PAT) drafted in production use at Insperanto pilot
+- ✅ Axiom grammar v0: 4 families (OBL, RCG, TRU, PAT) drafted in production use at <client-corp> pilot
 - ✅ Worked example: one obligation traced L0→L1→L2 with typed projection rule
 - ⚠️ Token handoff protocol: described, not yet implemented as reference module
 - ⚠️ JSON Schemas: not yet drafted

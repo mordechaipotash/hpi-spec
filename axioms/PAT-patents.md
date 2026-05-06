@@ -1,6 +1,6 @@
 # Axiom family 4 — Patent lifecycle (PAT)
 
-> **Status:** v0 draft, written 2026-05-01 in response to Jeffrey's strategic update — *"the bigger strategic piece is building proper patent insights ... a full patent lifecycle view ... allows us to move beyond law firms and start appealing directly to corporates."*
+> **Status:** v0 draft, written 2026-05-01 in response to <the CFO>'s strategic update — *"the bigger strategic piece is building proper patent insights ... a full patent lifecycle view ... allows us to move beyond law firms and start appealing directly to corporates."*
 
 ## The opinion
 
@@ -45,9 +45,9 @@ A US patent application 18/123,456 is the same node before and after grant; the 
 >
 > When real evidence arrives (an agent's invoice, a fee-receipt PDF), it merges into the expected node via the same OBL-3 predicate; the expected node `resolved_to_obligation_id` populates and the expected/actual delta becomes a typed audit fact.
 >
-> **This is the axiom that powers renewal forecasting.** It also encodes Jeffrey's *"future renewal forecasting"* ask as an ontology claim, not a feature. Forecasts are derived facts with provenance, not predictions.
+> **This is the axiom that powers renewal forecasting.** It also encodes <the CFO>'s *"future renewal forecasting"* ask as an ontology claim, not a feature. Forecasts are derived facts with provenance, not predictions.
 
-> **PAT-6 (draft):** Each prosecution event on a patent is a **recharge candidate** under RCG-1. The vendor (foreign agent) → intermediary (Insperanto) → final buyer (corporate or law-firm-acting-for-corporate) chain is the canonical patent-prosecution recharge. A patent therefore generates a *sequence of recharges* over its life, each tied to the patent node via a typed `prosecution_recharge` link. **Profit on a patent over its lifetime** is `Σ(margin)` over its prosecution-recharge sequence (RCG-2 + RCG-4 applied chain-by-chain).
+> **PAT-6 (draft):** Each prosecution event on a patent is a **recharge candidate** under RCG-1. The vendor (foreign agent) → intermediary (<client-corp>) → final buyer (corporate or law-firm-acting-for-corporate) chain is the canonical patent-prosecution recharge. A patent therefore generates a *sequence of recharges* over its life, each tied to the patent node via a typed `prosecution_recharge` link. **Profit on a patent over its lifetime** is `Σ(margin)` over its prosecution-recharge sequence (RCG-2 + RCG-4 applied chain-by-chain).
 
 > **PAT-7 (draft):** A patent's *strategic value indicators* are derived facts, not opinions. They include: (a) family breadth — count of jurisdictions in the typed family set; (b) prosecution trajectory — count of office actions, citations, examiner art; (c) maintenance commitment — fraction of due maintenance fees paid on time over rolling N years; (d) ownership stability — count of assignments in N years (low = stable, high = traded). Each indicator has a cited derivation rule. Strategic value is not a single number; it's a typed vector. *"Important patent"* is not in the worldview; *"high family-breadth, stable ownership, examined-and-granted in core jurisdictions"* is.
 
@@ -65,7 +65,7 @@ drafted → filed → published → examined → granted → maintained → expi
 
 ## What this axiom buys you
 
-- **The full patent lifecycle view, as a worldview claim.** Jeffrey's *"ownership, countries, filings, prosecution, renewal forecasting"* is not a feature list — it's PAT-1 (identity) + PAT-2 (jurisdictional fan-out) + PAT-3 (state) + PAT-4 (ownership) + PAT-5 (renewal-as-expected-obligation) + PAT-7 (strategic indicators). Each is a typed projection over the patent graph.
+- **The full patent lifecycle view, as a worldview claim.** <the CFO>'s *"ownership, countries, filings, prosecution, renewal forecasting"* is not a feature list — it's PAT-1 (identity) + PAT-2 (jurisdictional fan-out) + PAT-3 (state) + PAT-4 (ownership) + PAT-5 (renewal-as-expected-obligation) + PAT-7 (strategic indicators). Each is a typed projection over the patent graph.
 
 - **Direct-to-corporate is suddenly legible.** Corporates ask: *"what's our portfolio's renewal exposure in EP+JP+CN over the next 18 months at current FX?"* The answer is `sum(expected_obligation.estimated_amount where patent.owner=corporate AND patent.jurisdiction ∈ {EP, JP, CN} AND expected_obligation.due_date ∈ next_18_months)` — a typed query against PAT-2 + PAT-5. **Law firms cannot answer this from their billing system.** Persofi can answer it from the worldview directly.
 
@@ -119,7 +119,7 @@ By making the patent a first-class node with PAT-1..7, all five failures dissolv
 
 - **Identity for unpublished applications.** Until publication, jurisdiction issues an application number that may not be public. Internal Persofi identity must use a typed surrogate keyed on (filing_date, applicant, our_internal_ref) until the public number lands and merges in. Spec the merge rule.
 - **PCT national-phase entry.** A PCT application is a single node until national-phase entry creates jurisdiction-specific children. Are the children new nodes (PAT-1 says no — same identity) or jurisdiction-properties of one node (then PAT-2 typed family is null because the family is one node)? Strong opinion: each national-phase entry creates a sibling node linked by `family.priority_claim`, because the lifecycle (PAT-3) of the EP and US national-phase entries diverges and must be tracked independently. The PCT itself is a separate node with `expired` terminal state at national-phase entry.
-- **Cost allocation for shared-family events.** A single inventor-correction filing can apply to a whole family. Does the cost obligation attach to one node, all nodes, or a family-level node? Lean toward: family-level *event*, attached to a typed `family_event` sibling node, with cost-allocation per jurisdiction by typed rule (per-capita, by-importance, by-fee-schedule). v0 punts; needs a real example from Insperanto's data.
+- **Cost allocation for shared-family events.** A single inventor-correction filing can apply to a whole family. Does the cost obligation attach to one node, all nodes, or a family-level node? Lean toward: family-level *event*, attached to a typed `family_event` sibling node, with cost-allocation per jurisdiction by typed rule (per-capita, by-importance, by-fee-schedule). v0 punts; needs a real example from <client-corp>'s data.
 - **Continuation / divisional cost attribution.** A continuation filing in the US shares costs with its parent. Should the continuation's prosecution_recharge include a fraction attributable to the parent, or are they wholly independent? Strong opinion: independent at the recharge level, but the family relation surfaces both when `get_patent` is asked about either.
 - **Lapsed-then-revived state restoration.** PAT-3 allows `revived` from `lapsed`. Does the patent's TRU-3 trajectory restart, or carry forward the pre-lapse trust? Carry forward, with the lapse event itself as a TRU-2 dimension (a) signal (negative).
 - **Confidence on PAT-5 expected obligations.** When fee schedules change mid-life, what's the right way to encode the change? Lean toward: the expected obligation has an `as_of` date and a `schedule_version` reference; re-projection at a later date uses the then-current schedule. Audit trail preserves both.

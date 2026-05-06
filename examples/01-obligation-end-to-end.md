@@ -6,7 +6,7 @@ A single Persofi obligation traced from L0 evidence through L1 extraction into L
 
 ## The scenario
 
-Insperanto coordinates a patent prosecution job in Germany. The Insperanto client (final buyer) is *Acme Pharma*. Insperanto engages a German agent (vendor) to file the patent locally. The German agent invoices Insperanto €4,800; Insperanto invoices Acme Pharma €5,400. Net margin €600.
+<client-corp> coordinates a patent prosecution job in Germany. The <client-corp> client (final buyer) is *<final-buyer-corp>*. <client-corp> engages a German agent (vendor) to file the patent locally. The German agent invoices <client-corp> €4,800; <client-corp> invoices <final-buyer-corp> €5,400. Net margin €600.
 
 This is a textbook 2-leg recharge under [`02-recharges.md`](02-recharges.md) RCG-1.
 
@@ -16,22 +16,22 @@ Five evidence sources land in the system over 9 days:
 
 | Source | Timestamp | Content | Substrate |
 |---|---|---|---|
-| `E1` Email from German agent | Apr 18 09:14 CET | "Please find attached our invoice for the German filing of Acme matter, ref AC-2026-DE-0042" | inbox/L0 |
+| `E1` Email from German agent | Apr 18 09:14 CET | "Please find attached our invoice for the German filing of <final-buyer> matter, ref AC-2026-DE-0042" | inbox/L0 |
 | `E2` PDF attached to E1 | (same) | German agent invoice; supplier-invoice-number `DE-INV-87332`, amount €4,800.00, VAT 0% (cross-border B2B), due 30 days | files/L0 |
 | `E3` Plunet job-cost line | Apr 18 11:22 IDT | Job 4172, supplier-cost line €4,810.00, ref `DE-INV-87332` | plunet/L0 |
-| `E4` Insperanto's outgoing invoice to Acme Pharma | Apr 22 16:08 IDT | Customer invoice `INSP-2026-04-1099`, amount €5,400, ref `Job 4172`, due 45 days | xero/L0 |
-| `E5` Acme Pharma payment confirmation in Xero | Apr 27 09:01 IDT | Bank receipt €5,400 against `INSP-2026-04-1099` | xero/L0 |
+| `E4` <client-corp>'s outgoing invoice to <final-buyer-corp> | Apr 22 16:08 IDT | Customer invoice `INSP-2026-04-1099`, amount €5,400, ref `Job 4172`, due 45 days | xero/L0 |
+| `E5` <final-buyer-corp> payment confirmation in Xero | Apr 27 09:01 IDT | Bank receipt €5,400 against `INSP-2026-04-1099` | xero/L0 |
 
-Note `E2` says €4,800; `E3` says €4,810. Off by €10 — a Plunet rounding error that Jeffrey has flagged in the past.
+Note `E2` says €4,800; `E3` says €4,810. Off by €10 — a Plunet rounding error that <the CFO> has flagged in the past.
 
 ## L1 — deterministic extraction
 
 Each L0 source is extracted by a typed extractor producing a typed evidence node. No LLM judgment at L1.
 
 ```
-N1 = extract(E1) → EmailEvidence{ from: "billing@de-agent.de", references: ["AC-2026-DE-0042"], attachments: [N2] }
+N1 = extract(E1) → EmailEvidence{ from: "billing@de-vendor.example", references: ["AC-2026-DE-0042"], attachments: [N2] }
 N2 = extract(E2) → InvoiceEvidence{
-        supplier: "DE-AGENT-GMBH",
+        supplier: "<de-vendor-corp>",
         supplier_invoice_no: "DE-INV-87332",
         amount: 4800.00, currency: "EUR",
         issue_date: 2026-04-18, due_date: 2026-05-18,
@@ -39,13 +39,13 @@ N2 = extract(E2) → InvoiceEvidence{
      }
 N3 = extract(E3) → PlunetJobLine{
         job_id: 4172,
-        supplier: "DE-AGENT-GMBH",
+        supplier: "<de-vendor-corp>",
         supplier_ref: "DE-INV-87332",
         cost_amount: 4810.00, currency: "EUR",
         booked_at: 2026-04-18T11:22+03:00
      }
 N4 = extract(E4) → XeroInvoice{
-        customer: "ACME-PHARMA",
+        customer: "<FINAL-BUYER-CORP>",
         invoice_no: "INSP-2026-04-1099",
         amount: 5400.00, currency: "EUR",
         issue_date: 2026-04-22, due_date: 2026-06-06,
@@ -78,8 +78,8 @@ same_obligation(a, b) ⟺ (
 
 Result:
 
-- **Obligation O₁** (German agent → Insperanto): merges {N1, N2, N3} via shared counterparty `DE-AGENT-GMBH` + ref `DE-INV-87332` + amounts within T_amount = max(1%, €5) ≈ €48 → €10 mismatch is within tolerance.
-- **Obligation O₂** (Insperanto → Acme Pharma): {N4, N5} via shared customer + invoice number.
+- **Obligation O₁** (German agent → <client-corp>): merges {N1, N2, N3} via shared counterparty `<de-vendor-corp>` + ref `DE-INV-87332` + amounts within T_amount = max(1%, €5) ≈ €48 → €10 mismatch is within tolerance.
+- **Obligation O₂** (<client-corp> → <final-buyer-corp>): {N4, N5} via shared customer + invoice number.
 
 ### Step 2 — apply OBL-4 (canonical value, source priority)
 
@@ -93,7 +93,7 @@ For O₂ there's no conflict: canonical_amount(O₂) = €5,400.
 
 ### Step 3 — apply OBL-5 (FX freeze)
 
-Both obligations are in EUR. Insperanto's book currency is EUR. No FX conversion needed at the obligation level. (If the book were ILS, each obligation would freeze the EUR→ILS rate at its respective creation moment.)
+Both obligations are in EUR. <client-corp>'s book currency is EUR. No FX conversion needed at the obligation level. (If the book were ILS, each obligation would freeze the EUR→ILS rate at its respective creation moment.)
 
 ### Step 4 — apply OBL-2 (state)
 
@@ -111,7 +111,7 @@ recharge_candidate(upstream, downstream) ⟺ (
 )
 ```
 
-Both conditions hold: Insperanto is buyer of O₁ and seller of O₂; both reference Job 4172 (Plunet `job_id` 4172, Xero `memo_ref` "Job 4172"). → **Recharge R₁ = (upstream: O₁, downstream: O₂)**.
+Both conditions hold: <client-corp> is buyer of O₁ and seller of O₂; both reference Job 4172 (Plunet `job_id` 4172, Xero `memo_ref` "Job 4172"). → **Recharge R₁ = (upstream: O₁, downstream: O₂)**.
 
 ### Step 6 — apply RCG-2 (margin)
 
@@ -129,7 +129,7 @@ Profit on R₁ contributes to the period of the *second leg's settlement*. O₂ 
 
 ### Step 9 — apply TRU-1..3 (trust at decision time)
 
-Trust score for `DE-AGENT-GMBH` as of April 27 = `compute_trust(...)`. Suppose it returns 0.82 (long-standing relationship, clean reconciliation history). For Acme Pharma, suppose 0.91. Per RCG-5, recharge-chain trust = min(0.82, 0.91) = **0.82**.
+Trust score for `<de-vendor-corp>` as of April 27 = `compute_trust(...)`. Suppose it returns 0.82 (long-standing relationship, clean reconciliation history). For <final-buyer-corp>, suppose 0.91. Per RCG-5, recharge-chain trust = min(0.82, 0.91) = **0.82**.
 
 This score doesn't decide anything by itself yet — it's an input for any *action* the system might take next (e.g., auto-pay O₁ when it falls due). Per TRU-4 the auto-pay class for €4,800 (between $1K–$10K equivalent) requires trust ≥ 0.9 → action = `flag-and-review`, not `auto`.
 
@@ -138,7 +138,7 @@ This score doesn't decide anything by itself yet — it's an input for any *acti
 What lands in `chat-log/by-day/2026-04-27-L2.md` (or wherever this gets synthesized) is:
 
 ```markdown
-## Obligation O₁ · DE-AGENT-GMBH → Insperanto · €4,800
+## Obligation O₁ · <de-vendor-corp> → <client-corp> · €4,800
 
 **State:** recognized (since 2026-04-18)
 **Canonical amount:** €4,800.00 [OBL-4: supplier-PDF over Plunet, Xero unbooked]
@@ -146,7 +146,7 @@ What lands in `chat-log/by-day/2026-04-27-L2.md` (or wherever this gets synthesi
 **Evidence:** N1 (email Apr 18), N2 (PDF DE-INV-87332), N3 (Plunet line job 4172)
 **FX:** none (book = native = EUR)
 
-## Obligation O₂ · Insperanto → ACME-PHARMA · €5,400
+## Obligation O₂ · <client-corp> → <FINAL-BUYER-CORP> · €5,400
 
 **State:** settled (2026-04-27)
 **Canonical amount:** €5,400.00 [OBL-4: Xero authoritative, no conflict]
@@ -157,7 +157,7 @@ What lands in `chat-log/by-day/2026-04-27-L2.md` (or wherever this gets synthesi
 **Margin (provisional):** €600 [RCG-2]
 **Status:** incomplete [RCG-3] — upstream leg O₁ still recognized, not settled
 **Profit attribution:** April 2026 *provisional*, will become canonical when O₁ settles [RCG-4]
-**Chain trust:** 0.82 [RCG-5, min(DE-AGENT 0.82, ACME 0.91)]
+**Chain trust:** 0.82 [RCG-5, min(<de-vendor> 0.82, <final-buyer> 0.91)]
 
 ## Action recommendation
 
@@ -174,7 +174,7 @@ When O₁ falls due 2026-05-18: TRU-4 says action_class=auto-pay-$1K-$10K requir
 ## What L1 still has to do well
 
 - **Extractors must be correct** — if N3 has wrong `supplier_ref` because Plunet has bad data, the merge in step 1 fails and we get two phantom obligations. This is the L1's job: extract typed evidence faithfully, *don't* try to interpret meaning. Interpretation is L2's job, governed by axioms.
-- **Identity resolution on counterparties** is part of L1, not L2. *"DE-AGENT-GMBH"* in the email and *"DE Agent GmbH"* in Plunet have to resolve to the same node before they reach L2. This is a typed normalization step, not an LLM judgment — though LLMs may *propose* matches that the typed step then accepts/rejects against rules.
+- **Identity resolution on counterparties** is part of L1, not L2. *"<de-vendor-corp>"* in the email and *"DE Agent GmbH"* in Plunet have to resolve to the same node before they reach L2. This is a typed normalization step, not an LLM judgment — though LLMs may *propose* matches that the typed step then accepts/rejects against rules.
 
 ## What this changes about the streamer
 
