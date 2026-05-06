@@ -22,7 +22,7 @@ Do NOT publish to GitHub / share publicly until:
 | SPEC.md §1 — Foundations | ✅ DRAFT | Full draft, ~1100 words. 7 subsections including hyperscaler trajectory, alignment claim, open-protocol historical pattern, scope, audience |
 | SPEC.md §2 — Substrate Model | ✅ DRAFT | Full draft, ~2000 words. Needs example fleshing in 2.5 |
 | SPEC.md §3 — Typed Axiom Grammar | ✅ DRAFT | Full draft, references existing axiom files |
-| SPEC.md §4 — Token Handoff Protocol | 📝 OUTLINE | The hardest technical section. ~1500 words to expand |
+| SPEC.md §4 — Token Handoff Protocol | ✅ DRAFT | Full draft, ~1800 words. JWT format, scope structure, issuance flow, single-use, revocation, audit trail, delegation, worked example |
 | SPEC.md §5 — Wire Format & Transport | ✅ DRAFT | Full draft, ~1200 words. MCP method JSON shapes, discovery, storage interface, key management, versioning |
 | SPEC.md §6 — Reference Implementation | 📝 OUTLINE | Brain MCP + Viter L0-L3 are existence proofs |
 | SPEC.md §7 — Non-Goals | 📝 OUTLINE | List in README; expand to ~400 words |
