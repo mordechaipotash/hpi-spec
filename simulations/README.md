@@ -12,14 +12,16 @@ Pre-publication review simulation pipeline. Reviewers' real positions are resear
 | 4 | ~~Tim Berners-Lee~~ | **DEPRECATED** — excluded by cohort-vetter (too generic / unlikely engagement) | | | | |
 | 5 | ~~Sam Altman~~ | **DEPRECATED** — excluded by cohort-vetter (least likely engagement) | | | | |
 
-## v2 cohort (replaces v1 #4 + #5; adds two new candidates)
+## v2 cohort (DOSSIERS COMPLETE — Phase 1 only; full simulation pending)
 
-| # | Reviewer | Critique axis | Engagement likelihood |
-|---|---|---|---|
-| 4 | [Christopher Allen](reviewers/allen.md) — SSI / W3C / TLS 1.0 co-author | DID + VC ecosystem | **HIGH** |
-| 5 | [Daniel Stenberg](reviewers/stenberg.md) (curl) | Wire-format completeness / IETF pragmatics | **HIGH** |
-| 6 | [Bruce Schneier](reviewers/schneier.md) | Cryptographic threat model / key custody (calibration test against THREAT-MODEL.md) | medium-high |
-| 7 | [Cory Doctorow](reviewers/doctorow.md) | Protocol economics / enshittification / capture dynamics | **HIGH** |
+| # | Reviewer | Phase 1 (dossier) | Critique axis | Convergence test | New vector surfaced |
+|---|---|---|---|---|---|
+| 4 | [Christopher Allen](reviewers/allen.md) | ✅ | SSI / W3C / cryptographic architecture | ✅ Converges | **Coercion resistance at the delegation boundary** (legitimate platform operator as adversary) |
+| 5 | [Daniel Stenberg](reviewers/stenberg.md) | ✅ | Wire-format completeness / IETF pragmatics | ✅ Converges | **Deployment-tail specification failure** (advisory threat model = unbinding) |
+| 6 | [Bruce Schneier](reviewers/schneier.md) | ✅ | Cryptographic threat model / Inrupt experience | ✅ Converges (calibration: THREAT-MODEL.md PARTIALLY survives) | **Agent instruction channel as attack surface** + **Operator-as-adversary at protocol level** |
+| 7 | [Cory Doctorow](reviewers/doctorow.md) | ✅ | Political economy / enshittification | ✅ Converges | **AI inference pipeline as exfiltration vector** + **Anti-capture provisions as wire-format MUST-NOTs** |
+
+**Consolidated v2 findings: [`calibration/v2-cohort-findings.md`](calibration/v2-cohort-findings.md)**
 
 ## v1 cohort — what each pipeline produced
 
