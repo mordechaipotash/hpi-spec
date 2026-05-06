@@ -13,6 +13,7 @@ Do NOT publish to GitHub / share publicly until:
 3. ❌ At least 3 trusted readers have reviewed (candidates: Shaul, Yitzhak, Plurality team contact, Letta researcher contact)
 4. ✅ Insperanto-related material in axioms/examples sanitized to placeholders 2026-05-06 (residual `Insperanto` only in this STATUS.md, intentional)
 5. ✅ LICENSE present (Apache 2.0); per-impl MIT pending v0.1 reference impl
+6. ✅ THREAT-MODEL.md drafted (2026-05-06) — adversarial threat model addressing Karp + Schneier-predicted critiques
 
 Gate that remains: **#3, reader review.** Everything else cleared on 2026-05-06.
 
