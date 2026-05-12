@@ -6,11 +6,12 @@ on:
     paths:
       - 'SPEC.md'
       - 'README.md'
-      - 'STATUS.md'
+      - 'THREAT-MODEL.md'
       - 'axioms/**'
       - 'examples/**'
       - 'comparisons/**'
-      - 'simulations/**'
+      - 'governance/**'
+      - '.github/workflows/spec-stats.yml'
   workflow_dispatch:
 
 jobs:
@@ -22,17 +23,24 @@ jobs:
 
       - name: Compute spec stats
         id: stats
+        # Commit message is passed via env to avoid shell injection (e.g. backticks,
+        # multi-line commit messages with shell metacharacters break inline ${{ }} use).
+        env:
+          COMMIT_MSG_FIRSTLINE: ${{ github.event.head_commit.message }}
         run: |
+          # First line of commit message only; safely echo'd as a quoted argument.
+          msg_short=$(printf '%s\n' "${COMMIT_MSG_FIRSTLINE}" | head -n 1)
+
           {
             echo "## HPI spec — stats snapshot"
             echo
-            echo "Commit: \`${GITHUB_SHA::8}\` · ${{ github.event.head_commit.message }}"
+            printf 'Commit: `%s` · %s\n' "${GITHUB_SHA:0:8}" "$msg_short"
             echo
             echo "### Files"
             echo
             echo "| File | Lines | Words |"
             echo "|---|---:|---:|"
-            for f in README.md SPEC.md STATUS.md $(find axioms examples comparisons simulations -name '*.md' 2>/dev/null | sort); do
+            for f in README.md SPEC.md THREAT-MODEL.md $(find axioms examples comparisons governance -name '*.md' 2>/dev/null | sort); do
               [[ -f "$f" ]] || continue
               lines=$(wc -l < "$f" | tr -d ' ')
               words=$(wc -w < "$f" | tr -d ' ')
@@ -52,9 +60,10 @@ jobs:
               END { if (sec) printf "| %s | %d |\n", sec, words }
             ' SPEC.md
             echo
-            total_lines=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' | xargs wc -l 2>/dev/null | tail -1 | awk '{print $1}')
-            total_words=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' | xargs wc -w 2>/dev/null | tail -1 | awk '{print $1}')
-            echo "**Repo total:** $total_lines lines, $total_words words across $(find . -name '*.md' -not -path './.git/*' | wc -l | tr -d ' ') markdown files."
+            total_lines=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' -print0 2>/dev/null | xargs -0 wc -l 2>/dev/null | tail -1 | awk '{print $1}')
+            total_words=$(find . -name '*.md' -not -path './.git/*' -not -path './node_modules/*' -print0 2>/dev/null | xargs -0 wc -w 2>/dev/null | tail -1 | awk '{print $1}')
+            file_count=$(find . -name '*.md' -not -path './.git/*' 2>/dev/null | wc -l | tr -d ' ')
+            echo "**Repo total:** $total_lines lines, $total_words words across $file_count markdown files."
           } > stats.md
 
       - name: Upload stats artifact
@@ -64,4 +73,4 @@ jobs:
           path: stats.md
 
       - name: Print to job summary
-        run: cat stats.md >> $GITHUB_STEP_SUMMARY
+        run: cat stats.md >> "$GITHUB_STEP_SUMMARY"
