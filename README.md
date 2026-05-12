@@ -3,7 +3,7 @@
 > **A protocol for sovereign cognitive substrate. Each human owns their own AI context. Agents borrow scoped, time-bounded views via permissioned one-time tokens. The substrate never leaves the human.**
 
 **Status:** v0 draft. **NOT FOR PUBLIC RELEASE** until reviewed (see `STATUS.md`).
-**Author:** Mordechai Potash (`mordechai@potash.io`)
+**Author:** Mordechai Potash (`mordechaipotash@gmail.com`)
 **License:** Apache 2.0 (planned for spec); MIT (planned for reference impls)
 **Started:** 2026-05-06
 
