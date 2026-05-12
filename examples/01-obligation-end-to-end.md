@@ -1,8 +1,8 @@
 # Worked example — one obligation, end-to-end
 
-A single Persofi obligation traced from L0 evidence through L1 extraction into L2 projection, with the typed projection rule made explicit at every step.
+A single `<vertical-product>` obligation traced from L0 evidence through L1 extraction into L2 projection, with the typed projection rule made explicit at every step.
 
-> **Why this exists:** Yesterday Shaul asked at IKEA `24:37` *"how does it derive the L2 from L1?"* and we couldn't answer concretely. This is the answer.
+> **Why this exists:** to answer the question *"how does an L2 derive from L1?"* concretely, not abstractly.
 
 ## The scenario
 
@@ -18,11 +18,11 @@ Five evidence sources land in the system over 9 days:
 |---|---|---|---|
 | `E1` Email from German agent | Apr 18 09:14 CET | "Please find attached our invoice for the German filing of <final-buyer> matter, ref AC-2026-DE-0042" | inbox/L0 |
 | `E2` PDF attached to E1 | (same) | German agent invoice; supplier-invoice-number `DE-INV-87332`, amount €4,800.00, VAT 0% (cross-border B2B), due 30 days | files/L0 |
-| `E3` Plunet job-cost line | Apr 18 11:22 IDT | Job 4172, supplier-cost line €4,810.00, ref `DE-INV-87332` | plunet/L0 |
+| `E3` `<workflow-system>` job-cost line | Apr 18 11:22 IDT | Job 4172, supplier-cost line €4,810.00, ref `DE-INV-87332` | plunet/L0 |
 | `E4` <client-corp>'s outgoing invoice to <final-buyer-corp> | Apr 22 16:08 IDT | Customer invoice `INSP-2026-04-1099`, amount €5,400, ref `Job 4172`, due 45 days | xero/L0 |
-| `E5` <final-buyer-corp> payment confirmation in Xero | Apr 27 09:01 IDT | Bank receipt €5,400 against `INSP-2026-04-1099` | xero/L0 |
+| `E5` <final-buyer-corp> payment confirmation in `<accounting-system>` | Apr 27 09:01 IDT | Bank receipt €5,400 against `INSP-2026-04-1099` | xero/L0 |
 
-Note `E2` says €4,800; `E3` says €4,810. Off by €10 — a Plunet rounding error that <the CFO> has flagged in the past.
+Note `E2` says €4,800; `E3` says €4,810. Off by €10 — a `<workflow-system>` rounding error that <the CFO> has flagged in the past.
 
 ## L1 — deterministic extraction
 
@@ -37,21 +37,21 @@ N2 = extract(E2) → InvoiceEvidence{
         issue_date: 2026-04-18, due_date: 2026-05-18,
         client_ref: "AC-2026-DE-0042"
      }
-N3 = extract(E3) → PlunetJobLine{
+N3 = extract(E3) → `<workflow-system>`JobLine{
         job_id: 4172,
         supplier: "<de-vendor-corp>",
         supplier_ref: "DE-INV-87332",
         cost_amount: 4810.00, currency: "EUR",
         booked_at: 2026-04-18T11:22+03:00
      }
-N4 = extract(E4) → XeroInvoice{
+N4 = extract(E4) → `<accounting-system>`Invoice{
         customer: "<FINAL-BUYER-CORP>",
         invoice_no: "INSP-2026-04-1099",
         amount: 5400.00, currency: "EUR",
         issue_date: 2026-04-22, due_date: 2026-06-06,
         memo_ref: "Job 4172"
      }
-N5 = extract(E5) → XeroPayment{
+N5 = extract(E5) → `<accounting-system>`Payment{
         invoice_ref: "INSP-2026-04-1099",
         amount: 5400.00, currency: "EUR",
         booked_at: 2026-04-27T09:01+03:00
@@ -83,11 +83,11 @@ Result:
 
 ### Step 2 — apply OBL-4 (canonical value, source priority)
 
-For O₁, priority order is `Xero > Plunet > supplier-PDF > email`. Xero has nothing for this obligation (it's an upstream supplier bill, not yet booked into Xero). Plunet says €4,810; supplier PDF says €4,800. Per OBL-4, the supplier's own invoice **wins** when Xero is silent (because the supplier knows what they billed; Plunet's number is internally generated).
+For O₁, priority order is ``<accounting-system>` > `<workflow-system>` > supplier-PDF > email`. `<accounting-system>` has nothing for this obligation (it's an upstream supplier bill, not yet booked into `<accounting-system>`). `<workflow-system>` says €4,810; supplier PDF says €4,800. Per OBL-4, the supplier's own invoice **wins** when `<accounting-system>` is silent (because the supplier knows what they billed; `<workflow-system>`'s number is internally generated).
 
-→ **canonical_amount(O₁) = €4,800.00**, derivation cited: `OBL-4, supplier-PDF over Plunet, Xero unbooked`.
+→ **canonical_amount(O₁) = €4,800.00**, derivation cited: `OBL-4, supplier-PDF over `<workflow-system>`, `<accounting-system>` unbooked`.
 
-The €10 discrepancy between Plunet and PDF is **preserved as an audit-trail node** on O₁: `discrepancy{ source_a: PlunetJobLine N3 €4,810, source_b: InvoiceEvidence N2 €4,800, axiom: OBL-4, resolution: prefer N2, magnitude: €10 }`. It's not gone; it's typed.
+The €10 discrepancy between `<workflow-system>` and PDF is **preserved as an audit-trail node** on O₁: `discrepancy{ source_a: `<workflow-system>`JobLine N3 €4,810, source_b: InvoiceEvidence N2 €4,800, axiom: OBL-4, resolution: prefer N2, magnitude: €10 }`. It's not gone; it's typed.
 
 For O₂ there's no conflict: canonical_amount(O₂) = €5,400.
 
@@ -111,7 +111,7 @@ recharge_candidate(upstream, downstream) ⟺ (
 )
 ```
 
-Both conditions hold: <client-corp> is buyer of O₁ and seller of O₂; both reference Job 4172 (Plunet `job_id` 4172, Xero `memo_ref` "Job 4172"). → **Recharge R₁ = (upstream: O₁, downstream: O₂)**.
+Both conditions hold: <client-corp> is buyer of O₁ and seller of O₂; both reference Job 4172 (`<workflow-system>` `job_id` 4172, `<accounting-system>` `memo_ref` "Job 4172"). → **Recharge R₁ = (upstream: O₁, downstream: O₂)**.
 
 ### Step 6 — apply RCG-2 (margin)
 
@@ -141,16 +141,16 @@ What lands in `chat-log/by-day/2026-04-27-L2.md` (or wherever this gets synthesi
 ## Obligation O₁ · <de-vendor-corp> → <client-corp> · €4,800
 
 **State:** recognized (since 2026-04-18)
-**Canonical amount:** €4,800.00 [OBL-4: supplier-PDF over Plunet, Xero unbooked]
-**Discrepancy preserved:** Plunet says €4,810 (audit-trail node attached) — €10 rounding, within tolerance, supplier-PDF authoritative
-**Evidence:** N1 (email Apr 18), N2 (PDF DE-INV-87332), N3 (Plunet line job 4172)
+**Canonical amount:** €4,800.00 [OBL-4: supplier-PDF over `<workflow-system>`, `<accounting-system>` unbooked]
+**Discrepancy preserved:** `<workflow-system>` says €4,810 (audit-trail node attached) — €10 rounding, within tolerance, supplier-PDF authoritative
+**Evidence:** N1 (email Apr 18), N2 (PDF DE-INV-87332), N3 (`<workflow-system>` line job 4172)
 **FX:** none (book = native = EUR)
 
 ## Obligation O₂ · <client-corp> → <FINAL-BUYER-CORP> · €5,400
 
 **State:** settled (2026-04-27)
-**Canonical amount:** €5,400.00 [OBL-4: Xero authoritative, no conflict]
-**Evidence:** N4 (Xero invoice INSP-2026-04-1099), N5 (Xero payment Apr 27)
+**Canonical amount:** €5,400.00 [OBL-4: `<accounting-system>` authoritative, no conflict]
+**Evidence:** N4 (`<accounting-system>` invoice INSP-2026-04-1099), N5 (`<accounting-system>` payment Apr 27)
 
 ## Recharge R₁ · O₁ → O₂ via Job 4172
 
@@ -168,13 +168,13 @@ When O₁ falls due 2026-05-18: TRU-4 says action_class=auto-pay-$1K-$10K requir
 
 - **L2 isn't free text trusting an LLM.** Every claim cites an axiom; the axioms are typed; the derivation is reproducible.
 - **Profit isn't a number, it's a derived fact with provenance.** The €600 margin can't masquerade as confirmed profit because RCG-3 won't let it.
-- **Discrepancies don't disappear.** The €10 Plunet/PDF mismatch lives on the obligation as an audit-trail node, surfaceable in any view.
+- **Discrepancies don't disappear.** The €10 `<workflow-system>`/PDF mismatch lives on the obligation as an audit-trail node, surfaceable in any view.
 - **Action policy is a typed lookup, not a vibe.** When the agent considers auto-paying O₁, the answer is determined, not generated.
 
 ## What L1 still has to do well
 
-- **Extractors must be correct** — if N3 has wrong `supplier_ref` because Plunet has bad data, the merge in step 1 fails and we get two phantom obligations. This is the L1's job: extract typed evidence faithfully, *don't* try to interpret meaning. Interpretation is L2's job, governed by axioms.
-- **Identity resolution on counterparties** is part of L1, not L2. *"<de-vendor-corp>"* in the email and *"DE Agent GmbH"* in Plunet have to resolve to the same node before they reach L2. This is a typed normalization step, not an LLM judgment — though LLMs may *propose* matches that the typed step then accepts/rejects against rules.
+- **Extractors must be correct** — if N3 has wrong `supplier_ref` because `<workflow-system>` has bad data, the merge in step 1 fails and we get two phantom obligations. This is the L1's job: extract typed evidence faithfully, *don't* try to interpret meaning. Interpretation is L2's job, governed by axioms.
+- **Identity resolution on counterparties** is part of L1, not L2. *"<de-vendor-corp>"* in the email and *"DE Agent GmbH"* in `<workflow-system>` have to resolve to the same node before they reach L2. This is a typed normalization step, not an LLM judgment — though LLMs may *propose* matches that the typed step then accepts/rejects against rules.
 
 ## What this changes about the streamer
 

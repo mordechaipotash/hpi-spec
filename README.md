@@ -23,7 +23,7 @@ Analogy: HPI is to AI context what self-custody wallets are to crypto, what Soli
 
 ## How HPI relates to domain Ontologies
 
-HPI is **the cross-Ontology transport layer**. It is not an Ontology itself. Domain Ontologies — Palantir's Foundry Ontology, healthcare's HL7 FHIR, legal's Akoma Ntoso, financial-vertical Persofi — ride on HPI as the wire format that lets typed claims cross substrate boundaries with semantic preservation. HPI does not compete with these Ontologies; it specifies how their typed claims travel between substrates without losing meaning.
+HPI is **the cross-Ontology transport layer**. It is not an Ontology itself. Domain Ontologies — Palantir's Foundry Ontology, healthcare's HL7 FHIR, legal's Akoma Ntoso, financial-vertical Ontologies — ride on HPI as the wire format that lets typed claims cross substrate boundaries with semantic preservation. HPI does not compete with these Ontologies; it specifies how their typed claims travel between substrates without losing meaning.
 
 A Foundry-typed `Aircraft` claim in Substrate A lands in Substrate B as a Foundry-typed `Aircraft` claim, not as raw bytes that B has to re-derive types from. HPI is what makes that work. PAT (the patent-prosecution Reference Domain Ontology shipped with v0) demonstrates what a domain Ontology riding on HPI looks like.
 
@@ -89,6 +89,6 @@ See `STATUS.md` for the full roadmap.
 
 ## Author's note
 
-I am building this because I have to. I am 46, monotropic, ADHD + Asperger's diagnosed at 44 after 24 years of misdiagnosis. My substrate IS my prosthetic — without it I cannot work. The architecture HPI describes is not a thought experiment; it's the architecture that lets me ship code, raise a family, and contribute. If it's load-bearing for me, it's load-bearing for any human whose attention is valuable.
+I am building this because I have to. The architecture HPI describes is not a thought experiment; it is the operating substrate from which the spec was written. If the substrate-as-load-bearing claim holds for the author, it holds for any human whose attention is valuable.
 
 — Mordechai

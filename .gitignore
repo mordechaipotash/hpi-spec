@@ -11,3 +11,8 @@ reference-impl/python/.venv/
 reference-impl/python/**/__pycache__/
 reference-impl/python/**/*.egg-info/
 .pytest_cache/
+
+# Private working artifacts (internal-only; not part of v0 spec ship)
+STATUS.md
+outreach/
+simulations/

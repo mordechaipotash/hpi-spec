@@ -194,7 +194,7 @@ Implementations MUST emit L1 such that re-running the extractor over the same L0
 
 #### 2.2.2. L2 — synthesis with judgment
 
-L2 is interpretive synthesis. Decisions, themes, tagged quotes, state shifts. L2 carries the synthesizer's identity — *Mordechai's L2 of meeting M* and *Shaul's L2 of meeting M* are sibling L2 artifacts citing the same L1, not conflicting versions.
+L2 is interpretive synthesis. Decisions, themes, tagged quotes, state shifts. L2 carries the synthesizer's identity — *holder-A's L2 of meeting M* and *holder-B's L2 of meeting M* are sibling L2 artifacts citing the same L1, not conflicting versions.
 
 L2 MUST cite L1 by reference. Citation is structural (machine-resolvable pointer) and procedural (the L2 author affirms the citation).
 
@@ -243,9 +243,9 @@ Holder A publishes an L3 artifact (memo, article, video, code commit, social pos
 
 B never had access to A's L0/L1/L2 chain; B's L1+ chain on top is built atop A's L3 *as B's L0*.
 
-Worked example: Mordechai publishes a Persofi-flow memo as L3. <the CFO> receives the PDF. In <the CFO>'s substrate, the PDF is an L0 entity with:
+Worked example: Mordechai publishes a `<vertical-product>`-flow memo as L3. <the CFO> receives the PDF. In <the CFO>'s substrate, the PDF is an L0 entity with:
 - `creator: did:web:mordechai.id`
-- `ingester: did:web:jeffrey.id`
+- `ingester: did:web:cfo.example.com`
 - `backing: {kind: local, path: ".../persofi-flow-v3.pdf"}` + `{kind: external, url: "<gmail-message-id>"}`
 - `fetched_at: 2026-04-19T07:30Z`
 
@@ -295,7 +295,7 @@ Axiom families are the typed grammar for substrate-boundary preservation. They a
 
 ### 3.2. Axiom families (v0)
 
-Each axiom family is a *worldview claim* about a domain, expressed as a small set of typed sub-axioms. v0 covers four families, drawn from financial-vertical operations (the Persofi pilot at <client-corp>):
+Each axiom family is a *worldview claim* about a domain, expressed as a small set of typed sub-axioms. v0 covers four families, drawn from financial-vertical operations (the `<vertical-product>` pilot at <client-corp>):
 
 | Family | Domain | Type | File |
 |---|---|---|---|
@@ -336,13 +336,13 @@ JSON Schema appendices for each family are scope for v0.1.
 
 ### 3.5. Worked example
 
-A single Persofi obligation traced from L0 evidence (5 sources) through L1 extraction and L2 projection under the OBL family axioms is given in [`examples/01-obligation-end-to-end.md`](examples/01-obligation-end-to-end.md). This is the canonical reference for "how does an axiom family actually fire on real data." Implementers should read it before writing new axiom families.
+A single `<vertical-product>` obligation traced from L0 evidence (5 sources) through L1 extraction and L2 projection under the OBL family axioms is given in [`examples/01-obligation-end-to-end.md`](examples/01-obligation-end-to-end.md). This is the canonical reference for "how does an axiom family actually fire on real data." Implementers should read it before writing new axiom families.
 
 ### 3.6. The substrate-vs-ontology distinction
 
 Axiom families (this section) are the **vertical worldview** — what a domain MEANS. They are distinct from the **horizontal substrate** — how data physically traverses the L0–L3 stack.
 
-A discussion of this distinction, including the relationship to Anthropic MCP and to Plurality/OCL, is captured in [`axioms/06-substrate-vs-ontology.md`](axioms/06-substrate-vs-ontology.md).
+The relationship between this distinction and Anthropic MCP / Plurality OCL is discussed in §5 (transport) and §6 (reference implementations).
 
 For the protocol: **HPI's transport (§5) is substrate-level. HPI's typed grammar (this section) is ontology-level. Both are required, both are separable.** An HPI implementation could swap axiom families without changing transport; or swap transport (e.g., from MCP to a future RPC) without changing axiom families.
 
@@ -916,20 +916,20 @@ A specification without working code is theology. This section names the closest
 - Implements: L0 blob storage (filesystem-backed), L1 extraction (per-conversation summaries), L2 semantic search, audit logging
 - Does NOT yet implement: HPI token issuance/consumption, scoped agent borrowing, cite-or-die enforcement at the API surface
 
-**Viter L0→L3 pipeline** (Mordechai Potash + Shaul Levine, 2026-04–present)
+**Viter L0→L3 pipeline** (Mordechai Potash with co-architect, 2026-04–present)
 - Three substrate streams (chat-log, whatsapp, transcripts) each with deterministic L1 extraction (Python scripts) and LLM-driven L2 synthesis
 - L3 cross-stream fusion via daily-rebuild hook (`SessionEnd → rebuild-pipeline.sh`)
 - Implements: full L0–L3 layering with cite-or-die discipline, intertemporal collapse mechanism via `_now.md` regeneration
 - Does NOT yet implement: token-mediated agent access, multi-substrate boundary handoff
 
-**Persofi reconciliation** (financial-vertical product on Viter platform, 2026-04–present)
+**`<vertical-product>` reconciliation** (financial-vertical product on Viter platform, 2026-04–present)
 - Working axiom-typed OBL/RCG/TRU/PAT data on one pilot client's books
 - Implements: typed L1 evidence extraction, L2 obligation projection per the OBL family, partial RCG margin attribution
 - Does NOT yet implement: PAT lifecycle, full TRU scoring, HPI token surface
 
 ### 6.2. Gap analysis: what these implementations don't yet do
 
-| HPI requirement | Brain MCP | Viter L0–L3 | Persofi |
+| HPI requirement | Brain MCP | Viter L0–L3 | `<vertical-product>` |
 |---|---|---|---|
 | L0 immutable storage | ✅ | ✅ | ✅ |
 | L1 deterministic extraction | ✅ | ✅ | ✅ |
@@ -950,7 +950,7 @@ A v0.1 reference HPI runtime SHOULD provide:
 
 1. **Token issuance + verification** — JWT issue/verify with the v0 claim shape from §4.2; signing key management; `jti` consumption tracking; revocation list publication.
 2. **MCP method surface** — the four required methods from §5.2 exposed as MCP tools.
-3. **One axiom family end-to-end** — OBL is the recommended starting family because it has full v0 documentation, a worked example, and existing Persofi production data. Any third-party reference can use synthetic obligations.
+3. **One axiom family end-to-end** — OBL is the recommended starting family because it has full v0 documentation, a worked example, and existing `<vertical-product>` production data. Any third-party reference can use synthetic obligations.
 4. **L0 blob store backing** — filesystem reference; documented interface so alternative backings (S3, OCL, IPFS, Solid) drop in.
 5. **Audit log as L0 stream** — emit `hpi_*` events back into the substrate's L0 store.
 6. **Discovery document** — `.well-known/hpi.json` served from a configurable domain.
@@ -1150,7 +1150,7 @@ Candidate positions to evaluate:
 - **Enterprise gateway product** (Okta-of-substrate model) — captures licensing for institutional substrate-holder deployments. Defensible if compliance/audit features mature.
 - **Standards body / foundation** (Linux Foundation model) — captures membership dues, no per-transaction rent. Sustains the protocol but doesn't make anyone rich.
 
-The author's working assumption: the right position from his own seat is to be the **protocol designer + first reference implementor + axiom-family curator for one vertical** (Persofi as the demonstration), with subsequent revenue from consulting/expansion. Other positions emerge as the ecosystem develops. Open for discussion.
+The author's working assumption: the right position from his own seat is to be the **protocol designer + first reference implementor + axiom-family curator for one vertical** (`<vertical-product>` as the demonstration), with subsequent revenue from consulting/expansion. Other positions emerge as the ecosystem develops. Open for discussion.
 
 ### 8.10. Empirical comparison: agent capability under sovereign vs platform-memory architectures
 
@@ -1180,7 +1180,7 @@ HPI is not a clean-room invention. It synthesizes precedents from multiple tradi
 
 **Torah sourceability discipline (*l'havdel elef avdal*)** — the cite-or-die rule's intellectual lineage. The Talmudic discipline that every claim must be sourced to its origin (passuk → Mishnah → Gemara → Rishonim → Achronim) is the structural ancestor of HPI's layer-citation rule. Crediting this lineage honestly is unusual for a protocol document and is intentional. The architectural discipline of strict sourceability is not invented by Western computer science; it has a 2000-year-old engineering tradition that HPI consciously inherits.
 
-**Brain MCP and Viter L0→L3 pipeline (Mordechai Potash + Shaul Levine, 2024–present)** — the working implementations from which HPI's specification is extracted. Without Brain MCP's existence as a personal cognitive prosthetic, HPI's claims about substrate-as-prosthetic would be theoretical. Without Viter's L0→L3 pipeline running in production, HPI's layering rules would be untested.
+**Brain MCP and Viter L0→L3 pipeline (Mordechai Potash with co-architect, 2024–present)** — the working implementations from which HPI's specification is extracted. Without Brain MCP's existence as a personal cognitive substrate, HPI's claims about substrate-as-load-bearing would be theoretical. Without Viter's L0→L3 pipeline running in production, HPI's layering rules would be untested.
 
 **The substrate conservation insight (Mordechai Potash, 2026-05-06)** — the specific articulation that "L3 published across a substrate boundary becomes the next holder's L0" is the load-bearing novel claim of this spec. Prior precedents articulate user-data ownership and citation chains separately; the conservation law that unifies them across both interpersonal and intertemporal substrate boundaries is, to the editor's knowledge, unique to this document.
 

@@ -4,7 +4,7 @@
 
 A recharge is **a first-class entity**, not a flag on an invoice. It's a derivative obligation that re-routes economic substance through an intermediary — and *the profit calculation derives from it*. Treating recharge as a flag means profit numbers will silently drift from reality every time recharge logic changes. Treating it as an entity means profit is a typed derivation that can be audited, replayed, and disagreed with explicitly.
 
-This is the axiom <the CFO> was naming on 2026-04-19 morning when he wrote the 14-section Persofi Flow memo: *"If recharge is not accounted for, profit is not real."* That sentence is ontological, not procedural. It means: in your worldview, profit *cannot exist* unless the recharge graph has been resolved.
+This is the axiom `<the CFO>` named in a 14-section internal flow memo: *"If recharge is not accounted for, profit is not real."* That sentence is ontological, not procedural. It means: in this worldview, profit *cannot exist* unless the recharge graph has been resolved.
 
 ## Core axiom
 

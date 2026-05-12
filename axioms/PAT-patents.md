@@ -4,9 +4,9 @@
 
 ## The opinion
 
-A patent is not a row, a job, an invoice, or a folder of documents. It is **a long-lived legal entity** with its own state machine, jurisdictional fan-out, and obligation-generation schedule that runs for up to 20 years independently of any single transaction. Most accounting and IP-management software treats a patent as a denormalized attribute — a memo field on an invoice, a tag on a Plunet job, a column in a CSV. **Persofi treats the patent as a first-class node** that *generates* obligations rather than being described by them.
+A patent is not a row, a job, an invoice, or a folder of documents. It is **a long-lived legal entity** with its own state machine, jurisdictional fan-out, and obligation-generation schedule that runs for up to 20 years independently of any single transaction. Most accounting and IP-management software treats a patent as a denormalized attribute — a memo field on an invoice, a tag on a `<workflow-system>` job, a column in a CSV. **`<vertical-product>` treats the patent as a first-class node** that *generates* obligations rather than being described by them.
 
-This inversion is the unlock that makes the patent-lifecycle view a *worldview claim*, not a dashboard. **Corporates buy access to the patent graph** — invoices and jobs are the financial tail of the dog. Law firms buy the inverse view (jobs and invoices, with patents as memo) because their billing model is transactional. Persofi's moat is being the only system that holds *both* views in the same ontology and projects the right one for the audience.
+This inversion is the unlock that makes the patent-lifecycle view a *worldview claim*, not a dashboard. **Corporates buy access to the patent graph** — invoices and jobs are the financial tail of the dog. Law firms buy the inverse view (jobs and invoices, with patents as memo) because their billing model is transactional. `<vertical-product>`'s moat is being the only system that holds *both* views in the same ontology and projects the right one for the audience.
 
 ## Core axiom
 
@@ -67,13 +67,13 @@ drafted → filed → published → examined → granted → maintained → expi
 
 - **The full patent lifecycle view, as a worldview claim.** <the CFO>'s *"ownership, countries, filings, prosecution, renewal forecasting"* is not a feature list — it's PAT-1 (identity) + PAT-2 (jurisdictional fan-out) + PAT-3 (state) + PAT-4 (ownership) + PAT-5 (renewal-as-expected-obligation) + PAT-7 (strategic indicators). Each is a typed projection over the patent graph.
 
-- **Direct-to-corporate is suddenly legible.** Corporates ask: *"what's our portfolio's renewal exposure in EP+JP+CN over the next 18 months at current FX?"* The answer is `sum(expected_obligation.estimated_amount where patent.owner=corporate AND patent.jurisdiction ∈ {EP, JP, CN} AND expected_obligation.due_date ∈ next_18_months)` — a typed query against PAT-2 + PAT-5. **Law firms cannot answer this from their billing system.** Persofi can answer it from the worldview directly.
+- **Direct-to-corporate is suddenly legible.** Corporates ask: *"what's our portfolio's renewal exposure in EP+JP+CN over the next 18 months at current FX?"* The answer is `sum(expected_obligation.estimated_amount where patent.owner=corporate AND patent.jurisdiction ∈ {EP, JP, CN} AND expected_obligation.due_date ∈ next_18_months)` — a typed query against PAT-2 + PAT-5. **Law firms cannot answer this from their billing system.** `<vertical-product>` can answer it from the worldview directly.
 
-- **Renewal forecasting is not ML.** It's a deterministic projection of PAT-5 expected obligations against the jurisdiction-specific fee schedule. Confidence values are typed; surprises are typed (an actual fee differs from expected → audit-trail node, like the €10 Plunet/PDF mismatch in OBL-4).
+- **Renewal forecasting is not ML.** It's a deterministic projection of PAT-5 expected obligations against the jurisdiction-specific fee schedule. Confidence values are typed; surprises are typed (an actual fee differs from expected → audit-trail node, like the €10 `<workflow-system>`/PDF mismatch in OBL-4).
 
-- **Cross-firm portfolio aggregation falls out.** A corporate that uses three different law firms for prosecution sees one view in Persofi because the patent identity (PAT-1) survives the firm boundary. Each firm contributes *evidence* about prosecution events; PAT-1 holds the identity; OBL-3 merges across firms by jurisdiction + application_number.
+- **Cross-firm portfolio aggregation falls out.** A corporate that uses three different law firms for prosecution sees one view in `<vertical-product>` because the patent identity (PAT-1) survives the firm boundary. Each firm contributes *evidence* about prosecution events; PAT-1 holds the identity; OBL-3 merges across firms by jurisdiction + application_number.
 
-- **Patent-as-collateral.** When PAT-7 strategic indicators are typed and queryable, the patent becomes a financial asset whose *valuation provenance* is auditable. This is what separates Persofi from a DOKKA + Plunet integration: **DOKKA sees the bills; Persofi sees the asset that generated them.**
+- **Patent-as-collateral.** When PAT-7 strategic indicators are typed and queryable, the patent becomes a financial asset whose *valuation provenance* is auditable. This is what separates `<vertical-product>` from a DOKKA + `<workflow-system>` integration: **DOKKA sees the bills; `<vertical-product>` sees the asset that generated them.**
 
 ## L2 projection rule (worked, sketch)
 
@@ -110,14 +110,14 @@ By making the patent a first-class node with PAT-1..7, all five failures dissolv
 ## What's NOT in this axiom (intentionally)
 
 - **Patent valuation / price estimation.** Out of scope v0. PAT-7 produces typed indicators; pricing is a separate axiom family if it ever matters (PRX-* — pricing — distinct from PAT-*).
-- **Patent search / prior-art retrieval.** Different worldview entirely. Persofi doesn't do prior-art search.
+- **Patent search / prior-art retrieval.** Different worldview entirely. `<vertical-product>` doesn't do prior-art search.
 - **Litigation / opposition strategy.** PAT-3 captures the `opposed` state as a transition; the strategic *response* to opposition is out of scope.
 - **Specific examiner-data ingestion.** USPTO PAIR / EPO Register / etc. are L0 evidence sources for PAT-3 transitions; the integration spec is downstream.
 - **Trademark, design, copyright.** Different ontologies. Don't conflate.
 
 ## Open questions
 
-- **Identity for unpublished applications.** Until publication, jurisdiction issues an application number that may not be public. Internal Persofi identity must use a typed surrogate keyed on (filing_date, applicant, our_internal_ref) until the public number lands and merges in. Spec the merge rule.
+- **Identity for unpublished applications.** Until publication, jurisdiction issues an application number that may not be public. Internal `<vertical-product>` identity must use a typed surrogate keyed on (filing_date, applicant, our_internal_ref) until the public number lands and merges in. Spec the merge rule.
 - **PCT national-phase entry.** A PCT application is a single node until national-phase entry creates jurisdiction-specific children. Are the children new nodes (PAT-1 says no — same identity) or jurisdiction-properties of one node (then PAT-2 typed family is null because the family is one node)? Strong opinion: each national-phase entry creates a sibling node linked by `family.priority_claim`, because the lifecycle (PAT-3) of the EP and US national-phase entries diverges and must be tracked independently. The PCT itself is a separate node with `expired` terminal state at national-phase entry.
 - **Cost allocation for shared-family events.** A single inventor-correction filing can apply to a whole family. Does the cost obligation attach to one node, all nodes, or a family-level node? Lean toward: family-level *event*, attached to a typed `family_event` sibling node, with cost-allocation per jurisdiction by typed rule (per-capita, by-importance, by-fee-schedule). v0 punts; needs a real example from <client-corp>'s data.
 - **Continuation / divisional cost attribution.** A continuation filing in the US shares costs with its parent. Should the continuation's prosecution_recharge include a fraction attributable to the parent, or are they wholly independent? Strong opinion: independent at the recharge level, but the family relation surfaces both when `get_patent` is asked about either.
@@ -147,7 +147,7 @@ Section F of the `<client-corp>` CFO's strategic to-do list is reframed:
 
 - **F0 (NEW, prerequisite):** this file lands first.
 - **F1** schema migration (`add_patent_lifecycle.sql`) implements PAT-1..4 in storage; expected-obligations table implements PAT-5; prosecution_recharge_links implements PAT-6.
-- **F2** Plunet ↔ patents join is the OBL-3 evidence-merge for patent-event evidence sources.
+- **F2** `<workflow-system>` ↔ patents join is the OBL-3 evidence-merge for patent-event evidence sources.
 - **F3** renewal forecast is a typed query against PAT-5 expected obligations; not ML.
 - **F4** direct-to-corporate is the `viter_mcp/` typed projections of PAT-1..7; not a sales doc.
 

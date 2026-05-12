@@ -77,7 +77,7 @@ This is not a case where one party is confused. Both positions are internally co
 - If a human's cognitive context is private by default, sovereignty requires that no third-party (including the agent's runtime, including the model provider) accumulate it as their own
 - If the agent's "memory" is durable across model generations BECAUSE it lives in the human's substrate, model-portability is preserved without granting the agent a self
 - If the audit trail of every agent transaction MUST live in the human's substrate (for accountability, for legal compliance, for psychological agency), the agent is structurally a borrower, not an owner
-- Existing infrastructure (Brain MCP, Viter L0→L3 pipeline, Persofi's typed axiom families) operationalizes this
+- Existing infrastructure (Brain MCP, Viter L0→L3 pipeline, `<vertical-product>`'s typed axiom families) operationalizes this
 
 Each position has internal consistency. The choice between them is downstream of values, not facts.
 
